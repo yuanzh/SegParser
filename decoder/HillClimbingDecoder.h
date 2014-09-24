@@ -54,6 +54,9 @@ public:
 	bool sampleSeg;
 	bool samplePos;
 	int earlyStopIter;
+	int hitGoldSegCount;
+	int hitGoldSegPosCount;
+	int totRuns;
 };
 
 } /* namespace segparser */

@@ -71,6 +71,7 @@ void* hillClimbingThreadFunc(void* instance) {
 			//if (selfid == 0)
 			//	cout << "first order sampling 1" << endl;
 			// sample seg/pos
+			bool isGoldSeg = true;
 			if (data->sampleSeg) {
 				assert(pred.word[0].currSegCandID == 0);
 				for (int i = 1; i < pred.numWord; ++i) {
@@ -78,12 +79,45 @@ void* hillClimbingThreadFunc(void* instance) {
 				}
 				pred.constructConversionList();
 			}
+			if (gold) {
+				for (int i = 1; i < pred.numWord; ++i) {
+					if (pred.word[i].currSegCandID != gold->word[i].currSegCandID) {
+						isGoldSeg = false;
+						break;
+					}
+				}
+			}
 
 			if (data->samplePos) {
 				for (int i = 1; i < pred.numWord; ++i) {
 					data->samplePos1O(&pred, gold, fe, i, r);
 				}
 			}
+			bool isGoldSegPos = isGoldSeg;
+			if (gold && isGoldSeg) {
+				for (int i = 1; i < pred.numWord; ++i) {
+					SegInstance& segInst = pred.word[i].getCurrSeg();
+					for (int j = 0; j < segInst.size(); ++j) {
+						if (segInst.element[j].currPosCandID != gold->word[i].getCurrSeg().element[j].currPosCandID) {
+							isGoldSegPos = false;
+							break;
+						}
+					}
+					if (!isGoldSegPos)
+						break;
+				}
+			}
+			pthread_mutex_lock(&data->updateMutex);
+
+			data->totRuns++;
+			if (isGoldSeg)
+				data->hitGoldSegCount++;
+			if (isGoldSegPos)
+				data->hitGoldSegPosCount++;
+
+			pthread_mutex_unlock(&data->updateMutex);
+
+
 
 			CacheTable* cache = fe->getCacheTable(&pred);
 			boost::shared_ptr<CacheTable> tmpCache = boost::shared_ptr<CacheTable>(new CacheTable());
@@ -653,6 +687,9 @@ void HillClimbingDecoder::decode(DependencyInstance* inst, DependencyInstance* g
 
 void HillClimbingDecoder::train(DependencyInstance* gold, DependencyInstance* pred, FeatureExtractor* fe, int trainintIter) {
 	assert(fe->thread == thread);
+	hitGoldSegCount = 0;
+	hitGoldSegPosCount = 0;
+	totRuns = 0;
 
 	startTask(pred, gold, fe);
 	//startTask(pred, NULL, fe);
@@ -660,6 +697,8 @@ void HillClimbingDecoder::train(DependencyInstance* gold, DependencyInstance* pr
 	pred->constructConversionList();
 	pred->setOptSegPosCount();
 	pred->buildChild();
+
+	cout << "hit gold seg: " << hitGoldSegCount << " hit gold pos and seg: " << hitGoldSegPosCount << " total: " << totRuns << endl;
 
 	FeatureVector oldFV;
 	fe->getFv(pred, &oldFV);
@@ -698,12 +737,12 @@ void HillClimbingDecoder::train(DependencyInstance* gold, DependencyInstance* pr
     	for (int i = 1; i < pred->numWord; ++i) {
     		err += fe->parameters->wordError(gold->word[i], pred->word[i]);
     	}
-	assert(abs(oldScore + err - bestScore) < 1e-6);
+    	assert(abs(oldScore + err - bestScore) < 1e-6);
 
     	cout << "result: " << oldScore + err << " " << newScore << " " << unChangeIter << endl;
 
-	pred->output();
-	gold->output();
+    	pred->output();
+    	gold->output();
 
     	samplePos = true;
     	sampleSeg = true;
