@@ -406,7 +406,7 @@ double DependencyDecoder::samplePos1O(DependencyInstance* inst, DependencyInstan
 		}
 
 		for (unsigned int z = 0; z < probList.size(); ++z) {
-			probList[z] *= 1.0;
+			probList[z] *= 0.3;
 		}
 
 		convertScoreToProb(probList);
@@ -464,7 +464,7 @@ double DependencyDecoder::sampleSeg1O(DependencyInstance* inst, DependencyInstan
 	word.currSegCandID = oldSegID;
 
 	for (unsigned int i = 0; i < probList.size(); ++i) {
-		probList[i] *= 1.0;
+		probList[i] *= 0.7;
 	}
 
 	convertScoreToProb(probList);
