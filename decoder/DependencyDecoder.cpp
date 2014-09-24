@@ -406,7 +406,7 @@ double DependencyDecoder::samplePos1O(DependencyInstance* inst, DependencyInstan
 		}
 
 		for (unsigned int z = 0; z < probList.size(); ++z) {
-			probList[z] *= 0.5;
+			probList[z] *= 1.0;
 		}
 
 		convertScoreToProb(probList);
@@ -464,7 +464,7 @@ double DependencyDecoder::sampleSeg1O(DependencyInstance* inst, DependencyInstan
 	word.currSegCandID = oldSegID;
 
 	for (unsigned int i = 0; i < probList.size(); ++i) {
-		probList[i] *= 0.8;
+		probList[i] *= 1.0;
 	}
 
 	convertScoreToProb(probList);
@@ -817,6 +817,19 @@ void DependencyDecoder::updateSeg(DependencyInstance* pred, DependencyInstance* 
 		assert(relatedOldParent[j] < (int)word.outMap[index].size());
 		pred->getElement(relatedChildren[j]).dep = HeadIndex(m.hWord, word.outMap[index][relatedOldParent[j]]);
 	}
+}
+
+void DependencyDecoder::setGoldSegAndPos(DependencyInstance* pred, DependencyInstance* gold) {
+	for (int i = 1; i < pred->numWord; ++i) {
+		pred->word[i].currSegCandID = gold->word[i].currSegCandID;
+		SegInstance& segInst = pred->word[i].getCurrSeg();
+		for (int j = 0; j < segInst.size(); ++j) {
+			segInst.element[j].currPosCandID = gold->word[i].getCurrSeg().element[j].currPosCandID;
+			segInst.element[j].dep.setIndex(-1, 0);
+		}
+	}
+	pred->constructConversionList();
+	pred->setOptSegPosCount();
 }
 
 } /* namespace segparser */

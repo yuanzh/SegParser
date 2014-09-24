@@ -109,7 +109,7 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 				if (ele.candProb[k] > 1e-6)
 					ele.candProb[k] = log(ele.candProb[k]);
 				else
-					ele.candProb[k] = -20;
+					ele.candProb[k] = -10;
 			}
 		}
 		sumSegProb += word->candSeg[i].prob;
@@ -125,7 +125,7 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 		if (word->candSeg[i].prob > 1e-6)
 			word->candSeg[i].prob = log(word->candSeg[i].prob);
 		else
-			word->candSeg[i].prob = -20;
+			word->candSeg[i].prob = -10;
 	}
 }
 

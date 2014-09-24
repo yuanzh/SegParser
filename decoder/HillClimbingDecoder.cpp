@@ -65,19 +65,24 @@ void* hillClimbingThreadFunc(void* instance) {
 		// begin sampling
 		bool done = false;
 		int iter = 0;
-		double T = 0.3;
+		double T = 0.5;
 		for (iter = 0; iter < maxIter && !done; ++iter) {
 
 			//if (selfid == 0)
 			//	cout << "first order sampling 1" << endl;
 			// sample seg/pos
-			assert(pred.word[0].currSegCandID == 0);
-			for (int i = 1; i < pred.numWord; ++i) {
-				data->sampleSeg1O(&pred, gold, fe, i, r);
+			if (data->sampleSeg) {
+				assert(pred.word[0].currSegCandID == 0);
+				for (int i = 1; i < pred.numWord; ++i) {
+					data->sampleSeg1O(&pred, gold, fe, i, r);
+				}
+				pred.constructConversionList();
 			}
-			pred.constructConversionList();
-			for (int i = 1; i < pred.numWord; ++i) {
-				data->samplePos1O(&pred, gold, fe, i, r);
+
+			if (data->samplePos) {
+				for (int i = 1; i < pred.numWord; ++i) {
+					data->samplePos1O(&pred, gold, fe, i, r);
+				}
 			}
 
 			CacheTable* cache = fe->getCacheTable(&pred);
@@ -187,7 +192,7 @@ void* hillClimbingThreadFunc(void* instance) {
             	outloop++;
 
                 // improve pos
-                {
+                if (data->samplePos) {
                 	vector<HeadIndex> idx(len);
                 	HeadIndex root(0, 0);
                 	int id = data->getBottomUpOrder(&pred, root, idx, idx.size() - 1);
@@ -371,7 +376,7 @@ void* hillClimbingThreadFunc(void* instance) {
 
 			if (data->unChangeIter >= data->convergeIter)
 				done = true;
-			else if (gold && data->unChangeIter >= 50 && data->bestScore >= goldScore - 1e-6) {
+			else if (gold && data->unChangeIter >= data->earlyStopIter && data->bestScore >= goldScore - 1e-6) {
 				// early stop
 				//cout << "early stop" << endl;
 				done = true;
@@ -381,7 +386,7 @@ void* hillClimbingThreadFunc(void* instance) {
 				data->bestScore = currScore;
 				data->best.copyInfoFromInst(&pred);
 				if (!done) {
-					if (gold && data->unChangeIter >= 50 && data->bestScore >= goldScore - 1e-6) {
+					if (gold && data->unChangeIter >= data->earlyStopIter && data->bestScore >= goldScore - 1e-6) {
 						//done = true;
 						cout << " (" << data->unChangeIter << ") ";
 					}
@@ -417,6 +422,9 @@ void* hillClimbingThreadFunc(void* instance) {
 
 HillClimbingDecoder::HillClimbingDecoder(Options* options, int thread, int convergeIter) : DependencyDecoder(options), thread(thread), convergeIter(convergeIter) {
 	cout << "converge iter: " << convergeIter << endl;
+	earlyStopIter = 20;
+	samplePos = true;
+	sampleSeg = true;
 }
 
 HillClimbingDecoder::~HillClimbingDecoder() {
@@ -509,7 +517,7 @@ void HillClimbingDecoder::waitAndGetResult(DependencyInstance* inst) {
 		pthread_mutex_unlock(&taskMutex[i]);
 	}
 
-	if (gold && unChangeIter > 50 + thread) {
+	if (gold && unChangeIter > earlyStopIter + thread) {
 		cout << " (" << unChangeIter << ") ";
 		cout.flush();
 	}
@@ -658,73 +666,46 @@ void HillClimbingDecoder::train(DependencyInstance* gold, DependencyInstance* pr
 
 	FeatureVector& newFV = gold->fv;
 	double newScore = fe->parameters->getScore(&newFV);
-/*
-	FeatureVector tmpFV;
-	fe->pipe->createFeatureVector(gold, &tmpFV);
-	double goldScore = fe->parameters->getScore(&tmpFV);
-	assert(abs(goldScore - newScore) < 1e-6);
-
-	FeatureVector tmpFV2;
-	fe->pipe->createFeatureVector(pred, &tmpFV2);
-	double predScore = fe->parameters->getScore(&tmpFV2);
-	assert(abs(predScore - oldScore) < 1e-6);
-*/
-/*
-	if (oldScore < newScore - 1e-6) {
-    	cout << oldScore << " " << newScore << endl;
-    	for (int i = 1; i < pred->numWord; ++i) {
-    		Random r;
-    		cout << i << ": ";
-    		int oldid = pred->word[i].currSegCandID;
-    		vector<double> probList(pred->word[i].candSeg.size());
-    		for (unsigned int j = 0; j < pred->word[i].candSeg.size(); ++j) {
-    			pred->word[i].currSegCandID = j;
-    			//cout << "\t" << fe->getSegScore(pred, i);
-    			probList[j] = fe->getSegScore(pred, i);
-    		}
-    		pred->word[i].currSegCandID = oldid;
-    		convertScoreToProb(probList);
-    		int sample = samplePoint(probList, r);
-    		for (unsigned int j = 0; j < pred->word[i].candSeg.size(); ++j) {
-    			cout << "\t" << probList[j];
-    		}
-    		cout << endl;
-    	}
-    	cout << endl;
-    	pred->output();
-    	cout << "--------------------" << endl;
-    	//gold->output();
-    	//cout << "---------------------" << endl << endl;
-
-    	while (true) {
-    		string cmd;
-    		cin >> cmd;
-    		if (cmd == "pos") {
-    			int w, s, id;
-    			cin >> w >> s >> id;
-    			pred->word[w].getCurrSeg().element[s].currPosCandID = id;
-    			pred->setOptSegPosCount();
-        		cout << "score: " << fe->getScore(pred) << endl;
-    		}
-    		else if (cmd == "dep"){
-    			int w1, s1, w2, s2;
-    			cin >> w1 >> s1 >> w2 >> s2;
-    			pred->word[w1].getCurrSeg().element[s1].dep = HeadIndex(w2, s2);
-    			pred->buildChild();
-        		cout << "score: " << fe->getScore(pred) << endl;
-    		}
-    		else {
-    			break;
-    		}
-    	}
-
-    }
-*/
 
     double err = 0.0;
 	for (int i = 1; i < pred->numWord; ++i) {
 		err += fe->parameters->wordError(gold->word[i], pred->word[i]);
 	}
+
+    if (oldScore + err < newScore - 1e-6) {
+    	failTime++;
+    	cout << "failed finding violation: " << oldScore + err << " " << newScore << endl;
+    	cout << "setting gold seg and pos" << endl;
+    	setGoldSegAndPos(pred, gold);
+
+    	samplePos = false;
+    	sampleSeg = false;
+
+    	cout << "sample with gold seg and pos" << endl;
+    	startTask(pred, gold, fe);
+    	waitAndGetResult(pred);
+    	pred->constructConversionList();
+    	pred->setOptSegPosCount();
+    	pred->buildChild();
+
+    	cout << "pred score:";
+    	oldFV.clear();
+    	fe->getFv(pred, &oldFV);
+    	oldScore = fe->parameters->getScore(&oldFV);
+
+    	double err = 0.0;
+    	for (int i = 1; i < pred->numWord; ++i) {
+    		err += fe->parameters->wordError(gold->word[i], pred->word[i]);
+    	}
+
+    	cout << "result: " << oldScore + err << " " << newScore << endl;
+    	int x;
+    	cin >> x;
+
+    	samplePos = true;
+    	sampleSeg = true;
+    }
+
 	if (newScore - oldScore < err) {
 		FeatureVector diffFV;		// make a copy
 		diffFV.concat(&newFV);
@@ -733,11 +714,6 @@ void HillClimbingDecoder::train(DependencyInstance* gold, DependencyInstance* pr
 			fe->parameters->update(gold, pred, &diffFV, err - (newScore - oldScore), fe, updateTimes);
 		}
 	}
-
-    if (oldScore + err < newScore - 1e-6) {
-    	//cout << oldScore + err << " " << newScore << endl;
-    	failTime++;
-    }
 
     updateTimes++;
 }
