@@ -97,6 +97,7 @@ void* hillClimbingThreadFunc(void* instance) {
 			if (gold && isGoldSeg) {
 				for (int i = 1; i < pred.numWord; ++i) {
 					SegInstance& segInst = pred.word[i].getCurrSeg();
+					assert(segInst.size() == gold->word[i].getCurrSeg().size());
 					for (int j = 0; j < segInst.size(); ++j) {
 						if (segInst.element[j].currPosCandID != gold->word[i].getCurrSeg().element[j].currPosCandID) {
 							isGoldSegPos = false;
@@ -107,6 +108,7 @@ void* hillClimbingThreadFunc(void* instance) {
 						break;
 				}
 			}
+
 			pthread_mutex_lock(&data->updateMutex);
 
 			data->totRuns++;
