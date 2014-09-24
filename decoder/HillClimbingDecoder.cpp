@@ -489,7 +489,8 @@ void HillClimbingDecoder::startTask(DependencyInstance* pred, DependencyInstance
 	this->gold = gold;
 	this->fe = fe;
 
-	initInst(this->pred, fe);
+	if (samplePos || sampleSeg)
+		initInst(this->pred, fe);
 
 	bestScore = -DBL_MAX;
 	best.copyInfoFromInst(pred);
@@ -697,10 +698,12 @@ void HillClimbingDecoder::train(DependencyInstance* gold, DependencyInstance* pr
     	for (int i = 1; i < pred->numWord; ++i) {
     		err += fe->parameters->wordError(gold->word[i], pred->word[i]);
     	}
+	assert(abs(oldScore + err - bestScore) < 1e-6);
 
-    	cout << "result: " << oldScore + err << " " << newScore << endl;
-    	int x;
-    	cin >> x;
+    	cout << "result: " << oldScore + err << " " << newScore << " " << unChangeIter << endl;
+
+	pred->output();
+	gold->output();
 
     	samplePos = true;
     	sampleSeg = true;

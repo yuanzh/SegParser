@@ -523,7 +523,7 @@ int main(int argc, char** argv) {
 
 			prunerPipe.loadCoarseMap(prunerOptions.trainFile);
 
-			vector<inst_ptr> trainingData = prunerPipe.createInstances(prunerOptions.trainFile);
+			//vector<inst_ptr> trainingData = prunerPipe.createInstances(prunerOptions.trainFile);
 
 			pruner = new SegParser(&prunerPipe, &prunerOptions);
 			pruner->pruner = NULL;
@@ -559,7 +559,7 @@ int main(int argc, char** argv) {
 	    SegParser sp(&pipe, &options);
 	    sp.pruner = pruner;
 
-	    sp.loadModel(options.modelName);
+	    sp.loadModel(options.modelName + ".train");
 
 	    int numFeats = pipe.dataAlphabet->size() - 1;
 	    int numTypes = pipe.typeAlphabet->size() - 1;
