@@ -79,6 +79,7 @@ void* hillClimbingThreadFunc(void* instance) {
 				}
 				pred.constructConversionList();
 			}
+			/*
 			if (gold) {
 				for (int i = 1; i < pred.numWord; ++i) {
 					if (pred.word[i].currSegCandID != gold->word[i].currSegCandID) {
@@ -87,6 +88,7 @@ void* hillClimbingThreadFunc(void* instance) {
 					}
 				}
 			}
+			*/
 
 			if (data->samplePos) {
 				for (int i = 1; i < pred.numWord; ++i) {
@@ -94,6 +96,7 @@ void* hillClimbingThreadFunc(void* instance) {
 				}
 			}
 			bool isGoldSegPos = isGoldSeg;
+			/*
 			if (gold && isGoldSeg) {
 				for (int i = 1; i < pred.numWord; ++i) {
 					SegInstance& segInst = pred.word[i].getCurrSeg();
@@ -108,7 +111,8 @@ void* hillClimbingThreadFunc(void* instance) {
 						break;
 				}
 			}
-
+*/
+			/*
 			pthread_mutex_lock(&data->updateMutex);
 
 			data->totRuns++;
@@ -118,7 +122,7 @@ void* hillClimbingThreadFunc(void* instance) {
 				data->hitGoldSegPosCount++;
 
 			pthread_mutex_unlock(&data->updateMutex);
-
+*/
 
 
 			CacheTable* cache = fe->getCacheTable(&pred);
