@@ -271,7 +271,7 @@ void Parameters::update(DependencyInstance* target, DependencyInstance* curr,
 			total[diffFv->negBinaryIndex[i]] -= upd * alpha;
 		}
 		for (unsigned int i = 0; i < diffFv->normalIndex.size(); ++i) {
-			double val = min(4.0, max(-4.0, diffFv->normalValue[i]));
+			double val = min(2.0, max(-2.0, diffFv->normalValue[i]));
 			parameters[diffFv->normalIndex[i]] += alpha * val;
 			//tmpParams[diffFv->normalIndex[i]] += alpha * val;
 			total[diffFv->normalIndex[i]] += upd * alpha * val;
@@ -282,10 +282,6 @@ void Parameters::update(DependencyInstance* target, DependencyInstance* curr,
 double Parameters::getScore(FeatureVector* fv) {
 	double score = 0.0;
 	for (unsigned int i = 0; i < fv->binaryIndex.size(); ++i) {
-		if (fv->binaryIndex[i] >= size) {
-			cout << "get score bug: " << fv->binaryIndex[i] << " " << size << endl;
-			exit(0);
-		}
 		score += parameters[fv->binaryIndex[i]];
 	}
 	for (unsigned int i = 0; i < fv->negBinaryIndex.size(); ++i) {

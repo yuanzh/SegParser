@@ -65,7 +65,7 @@ void* hillClimbingThreadFunc(void* instance) {
 		// begin sampling
 		bool done = false;
 		int iter = 0;
-		double T = 0.25;
+		double T = 0.3;
 		for (iter = 0; iter < maxIter && !done; ++iter) {
 
 			//if (selfid == 0)
@@ -691,7 +691,7 @@ void HillClimbingDecoder::train(DependencyInstance* gold, DependencyInstance* pr
         fe->getFv(pred, &oldFV);
         oldScore = fe->parameters->getScore(&oldFV);
 
-    	double err = 0.0;
+    	err = 0.0;
     	for (int i = 1; i < pred->numWord; ++i) {
     		err += fe->parameters->wordError(gold->word[i], pred->word[i]);
     	}
