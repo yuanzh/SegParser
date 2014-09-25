@@ -65,7 +65,7 @@ void* hillClimbingThreadFunc(void* instance) {
 		// begin sampling
 		bool done = false;
 		int iter = 0;
-		double T = 0.3;
+		double T = 0.5;
 		for (iter = 0; iter < maxIter && !done; ++iter) {
 
 			//if (selfid == 0)
@@ -423,8 +423,8 @@ void* hillClimbingThreadFunc(void* instance) {
 HillClimbingDecoder::HillClimbingDecoder(Options* options, int thread, int convergeIter) : DependencyDecoder(options), thread(thread), convergeIter(convergeIter) {
 	cout << "converge iter: " << convergeIter << endl;
 	earlyStopIter = 40;
-    samplePos = true;
-    sampleSeg = true;
+    samplePos = false;
+    sampleSeg = false;
 }
 
 HillClimbingDecoder::~HillClimbingDecoder() {
@@ -489,8 +489,7 @@ void HillClimbingDecoder::startTask(DependencyInstance* pred, DependencyInstance
 	this->gold = gold;
 	this->fe = fe;
 
-    if (samplePos || sampleSeg)
-    	initInst(this->pred, fe);
+   	initInst(this->pred, fe);
 
 	bestScore = -DBL_MAX;
 	best.copyInfoFromInst(pred);
@@ -539,123 +538,22 @@ void HillClimbingDecoder::decode(DependencyInstance* inst, DependencyInstance* g
 
 	cout << "aaa: score: " << bestScore << "\tgold score:" << goldScore << " " << (bestScore >= goldScore - 1e-6 ? 1 : 0) << endl;
 
-	//FeatureVector fv;
-	//fe->pipe->createFeatureVector(inst, &fv);
-	//double predScore = fe->parameters->getScore(&fv);
-	/*
-	double predSegScore = 0.0;
-	double predPosScore = 0.0;
-	CacheTable* cache = fe->getCacheTable(inst);
-	for (int i = 1; i < inst->numWord; ++i) {
-		predSegScore += fe->getSegScore(inst, i);
-		for (int j = 0; j < inst->word[i].getCurrSeg().size(); ++j) {
-			HeadIndex m(i, j);
-			predPosScore += fe->getPos1OScore(inst, m);
-			predPosScore += fe->getPosHOScore(fe, inst, m, cache);
-		}
-	}*/
-
 	FeatureVector fv2;
 	fe->pipe->createFeatureVector(gold, &fv2);
 	double goldScore2 = fe->parameters->getScore(&fv2);
-	/*
-	double goldSegScore = 0.0;
-	double goldPosScore = 0.0;
-	cache = fe->getCacheTable(gold);
-	for (int i = 1; i < gold->numWord; ++i) {
-		goldSegScore += fe->getSegScore(gold, i);
-		for (int j = 0; j < gold->word[i].getCurrSeg().size(); ++j) {
-			HeadIndex m(i, j);
-			goldPosScore += fe->getPos1OScore(gold, m);
-			goldPosScore += fe->getPosHOScore(fe, gold, m, cache);
-		}
-	}*/
 
-	//cout << "bbb: score: " << predScore << "\tgold score:" << goldScore2 << endl;
-	//cout << "bbb: " << predSegScore << " " << goldSegScore << " " << predPosScore << " " << goldPosScore << endl;
-
-	if (abs(goldScore - goldScore2) > 1e-6) {
-		CacheTable* cache = fe->getCacheTable(gold);
-		for (int i = 1; i < gold->numWord; ++i) {
-			SegInstance& segInst = gold->word[i].getCurrSeg();
-			for (int j = 0; j < segInst.size(); ++j) {
-				HeadIndex m(i, j);
-				cout << m;
-				FeatureVector segfv;
-				fe->pipe->createPos1OFeatureVector(gold, m, &segfv);
-				fe->pipe->createPosHOFeatureVector(gold, m, false, &segfv);
-				double score = fe->parameters->getScore(&segfv);
-				FeatureVector segfv2;
-				fe->getPos1OFv(gold, m, &segfv2);
-				fe->getPosHOFv(fe, gold, m, &segfv2, cache);
-				double score2 = fe->parameters->getScore(&segfv2);
-				cout << " " << score << " " << score2 << endl;
-
-				if (abs(score - score2) > 1e-6) {
-					segfv.output();
-					segfv2.output();
-
-					SegElement& ele = segInst.element[j];
-					cout << ele.st << " " << ele.en << endl;
-					for (unsigned int k = 0; k < gold->characterid.size(); ++k) {
-						cout << gold->characterid[k] << " ";
-					}
-					cout << endl;
-				}
-			}
-		}
-		exit(0);
-	}
+	assert(abs(goldScore - goldScore2) < 1e-6);
 
     if (bestScore < goldScore - 1e-6) {
-    	//pred->output();
-    	//cout << "-------------------------" << endl;
-    	//gold->output();
-    	//cout << "--------------------------" << endl;
-/*
-    	while (true) {
-    		string cmd;
-    		cin >> cmd;
-    		if (cmd == "pos") {
-    			int w, s, id;
-    			cin >> w >> s >> id;
-        		inst->word[w].getCurrSeg().element[s].currPosCandID = id;
-        		inst->setOptSegPosCount();
-        		cout << "score: " << fe->getScore(inst) << endl;
-    		}
-    		else if (cmd == "dep"){
-    			int w1, s1, w2, s2;
-    			cin >> w1 >> s1 >> w2 >> s2;
-    			inst->word[w1].getCurrSeg().element[s1].dep = HeadIndex(w2, s2);
-        		inst->buildChild();
-        		cout << "score: " << fe->getScore(inst) << endl;
-    		}
-    		else {
-    			break;
-    		}
-    	}
-*/
     	failTime++;
     }
 
-    /*
-	fv.clear();
-	fe->getFv(inst, &fv);
-	predScore = fe->parameters->getScore(&fv);
-
-	fv.clear();
-	fe->getFv(gold, &fv);
-	goldScore = fe->parameters->getScore(&fv);
-
-	cout << "ddd: score: " << predScore << "\tgold score:" << goldScore << endl;
-	*/
 }
 
 void HillClimbingDecoder::train(DependencyInstance* gold, DependencyInstance* pred, FeatureExtractor* fe, int trainintIter) {
 	assert(fe->thread == thread);
 
 	startTask(pred, gold, fe);
-	//startTask(pred, NULL, fe);
 	waitAndGetResult(pred);
 	pred->constructConversionList();
 	pred->setOptSegPosCount();
@@ -674,39 +572,10 @@ void HillClimbingDecoder::train(DependencyInstance* gold, DependencyInstance* pr
 	}
 
     if (oldScore + err < newScore - 1e-6) {
-    	//cout << oldScore + err << " " << newScore << endl;
-    	cout << "use gold seg and pos" << endl;
-        setGoldSegAndPos(pred, gold);
-
-        samplePos = false;
-        sampleSeg = false;
-
-        startTask(pred, gold, fe);
-        waitAndGetResult(pred);
-        pred->constructConversionList();
-        pred->setOptSegPosCount();
-        pred->buildChild();
-
-        oldFV.clear();
-        fe->getFv(pred, &oldFV);
-        oldScore = fe->parameters->getScore(&oldFV);
-
-    	err = 0.0;
-    	for (int i = 1; i < pred->numWord; ++i) {
-    		err += fe->parameters->wordError(gold->word[i], pred->word[i]);
-    	}
-
-    	cout << "result: " << oldScore + err << " " << newScore << " " << unChangeIter << endl;
-
-    	samplePos = true;
-        sampleSeg = true;
-
-        if (oldScore + err < newScore - 1e-6) {
-        	failTime++;
-        }
+    	failTime++;
     }
 
-	if (newScore - oldScore < err) {
+    if (newScore - oldScore < err) {
 		FeatureVector diffFV;		// make a copy
 		diffFV.concat(&newFV);
 		diffFV.concatNeg(&oldFV);

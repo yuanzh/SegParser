@@ -106,7 +106,7 @@ void* decodeThreadFunc(void* instance) {
 			gold = *(pred.get());
 			decoder->removeGoldInfo(pred.get());		// make sure gold information is wiped at the beginning;
 			fe = boost::shared_ptr<FeatureExtractor>(new FeatureExtractor(pred.get(), inst->sp, params, inst->options->devThread));
-			decoder->initInst(pred.get(), fe.get());	// remove gold info and init trees
+			//decoder->initInst(pred.get(), fe.get());	// remove gold info and init trees
 		}
 
 		pthread_mutex_unlock(&inst->processMutex);
@@ -167,8 +167,6 @@ void* work(void* instance) {
 		cout.flush();
 	}
 
-	if (!inst->options->jointSegPos)
-		inst->reader.hasCandidate = false;
 	inst->reader.startReading(inst->options, inst->devfile);
 
 	inst->currProcessID = 0;
@@ -460,8 +458,6 @@ double DevelopmentThread::computeTedEval() {
 		ofstream foutSeg(segFileName.c_str());
 
 		DependencyReader reader(options, devfile);
-		if (!options->jointSegPos)
-			reader.hasCandidate = false;
 		inst_ptr inst = reader.nextInstance();
 
 		int num = 0;

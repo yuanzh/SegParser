@@ -139,8 +139,7 @@ void DependencyPipe::buildDictionary(string& goldfile) {
 	buildSuffixList();
 
 	DependencyReader reader(options, goldfile);
-	if (!options->jointSegPos)
-		reader.hasCandidate = false;
+	reader.hasCandidate = false;
 	inst_ptr gold = reader.nextInstance();
 
 	int cnt = 0;
@@ -164,102 +163,15 @@ void DependencyPipe::buildDictionary(string& goldfile) {
 	setAndCheckOffset();
 }
 
-void DependencyPipe::buildDictionaryWithOOV(string& goldfile) {
-	cout << "Creating Dictionary with OOV ... ";
-	cout.flush();
-
-	// fill alphabet with special value
-	posAlphabet->lookupIndex("#START#");
-	posAlphabet->lookupIndex("#MID#");
-	posAlphabet->lookupIndex("#END#");
-
-	typeAlphabet->lookupIndex("<no-type>");
-
-	buildSuffixList();
-
-	DependencyReader reader(options, goldfile);
-	if (!options->jointSegPos)
-		reader.hasCandidate = false;
-	inst_ptr gold = reader.nextInstance();
-
-	int cnt = 0;
-	unordered_map<string, int> wordCount;
-
-	while (gold) {
-		if ((cnt + 1) % 1000 == 0) {
-			cout << (cnt + 1) << "  ";
-			cout.flush();
-		}
-
-		for (int i = 0; i < gold->numWord; ++i) {
-			WordInstance& word = gold->word[i];
-			for (unsigned int j = 0; j < word.goldForm.size(); ++j) {
-				wordCount[gold->normalize(word.goldForm[j])]++;
-			}
-
-			SegInstance& currSeg = word.getCurrSeg();
-			// label id
-			for (int j = 0; j < currSeg.size(); ++j)
-				typeAlphabet->lookupIndex(word.goldLab[j]);
-
-			for (unsigned int j = 0; j < word.candSeg.size(); ++j) {
-				SegInstance& seg = word.candSeg[j];
-				for (unsigned int k = 0; k < seg.morph.size(); ++k) {
-					posAlphabet->lookupIndex(seg.morph[k]);
-				}
-
-				for (int k = 0; k < seg.size(); ++k) {
-					SegElement& ele = seg.element[k];
-					// pos
-					for (int l = 0; l < ele.candPosNum(); ++l) {
-						posAlphabet->lookupIndex(ele.candPos[l]);
-					}
-				}
-			}
-		}
-
-		gold = reader.nextInstance();
-		cnt++;
-		if (cnt >= options->trainSentences)
-			break;
-	}
-	reader.close();
-
-	assert(lexAlphabet->size() == 1);
-
-	lexAlphabet->lookupIndex("#START#");
-	lexAlphabet->lookupIndex("#MID#");
-	lexAlphabet->lookupIndex("#END#");
-	lexAlphabet->lookupIndex("\"");
-	lexAlphabet->lookupIndex("(");
-	lexAlphabet->lookupIndex(")");
-
-	for (unordered_map<string, int>::iterator iter = wordCount.begin(); iter != wordCount.end(); ++iter) {
-		if (iter->second >= 2) {
-			lexAlphabet->lookupIndex(iter->first);
-		}
-	}
-
-	cout << "Done." << endl;
-
-	setAndCheckOffset();
-
-	lexAlphabet->stopGrowth();
-	typeAlphabet->stopGrowth();
-	posAlphabet->stopGrowth();
-}
-
 void DependencyPipe::createAlphabet(string& goldfile) {
 
 	buildDictionary(goldfile);
-	//buildDictionaryWithOOV(goldfile);
 
 	cout << "Creating Alphabet ... ";
 	cout.flush();
 
 	DependencyReader reader(options, goldfile);
-	if (!options->jointSegPos)
-		reader.hasCandidate = false;
+	reader.hasCandidate = false;
 	inst_ptr gold = reader.nextInstance();
 
 	int cnt = 0;
@@ -317,8 +229,7 @@ vector<inst_ptr> DependencyPipe::createInstances(string goldFile) {
 	cout.flush();
 
 	DependencyReader reader(options, goldFile);
-	if (!options->jointSegPos)
-		reader.hasCandidate = false;
+	reader.hasCandidate = false;
 
 	inst_ptr gold = reader.nextInstance();
 
