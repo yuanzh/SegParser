@@ -91,6 +91,7 @@ protected:
 	void updateSeg(DependencyInstance* pred, DependencyInstance* gold, HeadIndex& m,
 			int newSeg, int oldSeg, int baseOptSeg, int baseOptPos, vector<int>& oldPos, vector<HeadIndex>& oldHeadIndex,
 			vector<HeadIndex>& relatedChildren, vector<int>& relatedOldParent);
+	void setGoldSegAndPos(DependencyInstance* pred, DependencyInstance* gold);
 };
 
 } /* namespace segparser */

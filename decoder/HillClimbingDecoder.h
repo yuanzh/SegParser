@@ -50,6 +50,10 @@ public:
 	int thread;
 
 	int convergeIter;
+
+	int earlyStopIter;
+	bool samplePos;
+	bool sampleSeg;
 };
 
 } /* namespace segparser */

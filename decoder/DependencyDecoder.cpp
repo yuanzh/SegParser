@@ -388,6 +388,7 @@ double DependencyDecoder::samplePos1O(DependencyInstance* inst, DependencyInstan
 
 		for (int j = 0; j < ele.candPosNum(); ++j) {
 			ele.currPosCandID = j;
+
 			probList[j] = fe->getPos1OScore(inst, m);
 			FeatureVector tmpfv;
 			fe->pipe->createPosHOFeatureVector(inst, m, true, &tmpfv);
@@ -403,6 +404,11 @@ double DependencyDecoder::samplePos1O(DependencyInstance* inst, DependencyInstan
 				}
 			}
 			probList[j] += loss;
+
+			//if (ele.candProb[j] < -15.0)
+			//	probList[j] = -20.0;
+			//else
+			//probList[j] = 0.0;
 		}
 
 		for (unsigned int z = 0; z < probList.size(); ++z) {
@@ -453,6 +459,7 @@ double DependencyDecoder::sampleSeg1O(DependencyInstance* inst, DependencyInstan
 	// sample seg first
 	for (unsigned int i = 0; i < word.candSeg.size(); ++i) {
 		word.currSegCandID = i;
+
 		probList[i] = fe->getSegScore(inst, wordID);
 		if (gold) {
 			SegInstance& goldInst = gold->word[wordID].getCurrSeg();
@@ -460,11 +467,16 @@ double DependencyDecoder::sampleSeg1O(DependencyInstance* inst, DependencyInstan
 					1.0 * (word.getCurrSeg().size() + goldInst.size()) : 0.0; // consistent with parameter::wordError
 			probList[i] += loss;
 		}
+
+		//if (word.candSeg[i].prob < -15.0)
+		//	probList[i] = -20.0;
+		//else
+		//probList[i] = 0.0;
 	}
 	word.currSegCandID = oldSegID;
 
 	for (unsigned int i = 0; i < probList.size(); ++i) {
-		probList[i] *= 0.8;
+		probList[i] *= 0.5;
 	}
 
 	convertScoreToProb(probList);
@@ -817,6 +829,20 @@ void DependencyDecoder::updateSeg(DependencyInstance* pred, DependencyInstance* 
 		assert(relatedOldParent[j] < (int)word.outMap[index].size());
 		pred->getElement(relatedChildren[j]).dep = HeadIndex(m.hWord, word.outMap[index][relatedOldParent[j]]);
 	}
+}
+
+
+void DependencyDecoder::setGoldSegAndPos(DependencyInstance* pred, DependencyInstance* gold) {
+	for (int i = 1; i < pred->numWord; ++i) {
+		pred->word[i].currSegCandID = gold->word[i].currSegCandID;
+		SegInstance& segInst = pred->word[i].getCurrSeg();
+		for (int j = 0; j < segInst.size(); ++j) {
+			segInst.element[j].currPosCandID = gold->word[i].getCurrSeg().element[j].currPosCandID;
+			segInst.element[j].dep.setIndex(-1, 0);
+		}
+	}
+	pred->constructConversionList();
+	pred->setOptSegPosCount();
 }
 
 } /* namespace segparser */
