@@ -170,6 +170,7 @@ void* work(void* instance) {
 	if (!inst->options->jointSegPos)
 		inst->reader.hasCandidate = false;
 	inst->reader.startReading(inst->options, inst->devfile);
+	inst->reader.isTrain = false;
 
 	inst->currProcessID = 0;
 	inst->currFinishID = 0;

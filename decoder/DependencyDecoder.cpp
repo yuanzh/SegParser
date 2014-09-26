@@ -390,20 +390,22 @@ double DependencyDecoder::samplePos1O(DependencyInstance* inst, DependencyInstan
 			ele.currPosCandID = j;
 
 			probList[j] = fe->getPos1OScore(inst, m);
+			//probList[j] = ele.candProb[j];
 			FeatureVector tmpfv;
 			fe->pipe->createPosHOFeatureVector(inst, m, true, &tmpfv);
 			probList[j] += fe->parameters->getScore(&tmpfv);
 
-			double loss = 0.0;
 			if (gold) {
 				SegInstance& goldInst = gold->word[wordID].getCurrSeg();
+				double loss = 0.0;
 
 				if (word.currSegCandID == gold->word[wordID].currSegCandID
 						&& j != goldInst.element[j].currPosCandID) {
-					loss = 1.5;
+					//loss = 1.5;
+					loss = 1.0;
 				}
+				probList[j] += loss;
 			}
-			probList[j] += loss;
 
 			//if (ele.candProb[j] < -15.0)
 			//	probList[j] = -20.0;
@@ -411,17 +413,17 @@ double DependencyDecoder::samplePos1O(DependencyInstance* inst, DependencyInstan
 			//probList[j] = 0.0;
 		}
 
-		if (gold) {
+		//if (gold) {
 			for (unsigned int z = 0; z < probList.size(); ++z) {
 				probList[z] *= 0.5;
 			}
-		}
+		//}
 
 		convertScoreToProb(probList);
 		int sample = samplePoint(probList, r);
 		ele.currPosCandID = sample;
 		word.optPosCount += (ele.currPosCandID == 0 ? 1 : 0);
-		prob = probList[ele.currPosCandID];
+		prob *= probList[ele.currPosCandID];
 	}
 
 	// set the heuristic dep, can be more efficient
@@ -463,10 +465,13 @@ double DependencyDecoder::sampleSeg1O(DependencyInstance* inst, DependencyInstan
 		word.currSegCandID = i;
 
 		probList[i] = fe->getSegScore(inst, wordID);
+		//probList[i] = word.candSeg[i].prob;
+
 		if (gold) {
 			SegInstance& goldInst = gold->word[wordID].getCurrSeg();
 			double loss = ((int)i != gold->word[wordID].currSegCandID) ?
 					1.0 * (word.getCurrSeg().size() + goldInst.size()) : 0.0; // consistent with parameter::wordError
+					//1.0 : 0.0;
 			probList[i] += loss;
 		}
 
@@ -477,11 +482,11 @@ double DependencyDecoder::sampleSeg1O(DependencyInstance* inst, DependencyInstan
 	}
 	word.currSegCandID = oldSegID;
 
-	if (gold) {
+	//if (gold) {
 		for (unsigned int i = 0; i < probList.size(); ++i) {
 			probList[i] *= 0.5;
 		}
-	}
+	//}
 
 	convertScoreToProb(probList);
 	int sample = samplePoint(probList, r);

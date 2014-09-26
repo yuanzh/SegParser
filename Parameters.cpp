@@ -117,7 +117,7 @@ double Parameters::numError(DependencyInstance* gold, DependencyInstance* pred) 
 				SegElement& predEle = predSeg.element[j];
 
 				if (goldEle.currPosCandID != predEle.currPosCandID) {
-					e += 1.5;
+					e += 1.0;
 				}
 				else if (goldEle.dep != predEle.dep) {
 					e += 1.0;
@@ -143,7 +143,7 @@ double Parameters::elementError(WordInstance& gold, WordInstance& pred, int segi
 		SegElement& predEle = pred.getCurrSeg().element[segid];
 
 		if (goldEle.currPosCandID != predEle.currPosCandID) {
-			e += 1.5;		// this value should not matter...
+			e += 1.0;		// this value should not matter...
 		}
 		else if (goldEle.dep != predEle.dep) {
 			e += 1.0;
@@ -184,7 +184,7 @@ double Parameters::wordError(WordInstance& gold, WordInstance& pred) {
 			assert(goldEle.labid == predEle.labid);
 
 			if (goldEle.currPosCandID != predEle.currPosCandID) {
-				e += 1.5;
+				e += 1.0;
 			}
 			else if (goldEle.dep != predEle.dep) {
 				e += 1.0;
@@ -213,7 +213,7 @@ double Parameters::wordDepError(WordInstance& gold, WordInstance& pred) {
 			assert(goldEle.labid == predEle.labid);
 
 			if (goldEle.currPosCandID != predEle.currPosCandID) {
-				e += 1.5;
+				e += 1.0;
 			}
 			else if (goldEle.dep != predEle.dep) {
 				e += 1.0;

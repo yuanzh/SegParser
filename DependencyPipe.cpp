@@ -141,6 +141,8 @@ void DependencyPipe::buildDictionary(string& goldfile) {
 	DependencyReader reader(options, goldfile);
 	if (!options->jointSegPos)
 		reader.hasCandidate = false;
+	reader.isTrain = true;
+
 	inst_ptr gold = reader.nextInstance();
 
 	int cnt = 0;
@@ -180,6 +182,8 @@ void DependencyPipe::buildDictionaryWithOOV(string& goldfile) {
 	DependencyReader reader(options, goldfile);
 	if (!options->jointSegPos)
 		reader.hasCandidate = false;
+	reader.isTrain = true;
+
 	inst_ptr gold = reader.nextInstance();
 
 	int cnt = 0;
@@ -260,6 +264,8 @@ void DependencyPipe::createAlphabet(string& goldfile) {
 	DependencyReader reader(options, goldfile);
 	if (!options->jointSegPos)
 		reader.hasCandidate = false;
+	reader.isTrain = true;
+
 	inst_ptr gold = reader.nextInstance();
 
 	int cnt = 0;
@@ -319,6 +325,7 @@ vector<inst_ptr> DependencyPipe::createInstances(string goldFile) {
 	DependencyReader reader(options, goldFile);
 	if (!options->jointSegPos)
 		reader.hasCandidate = false;
+	reader.isTrain = true;
 
 	inst_ptr gold = reader.nextInstance();
 
@@ -1707,6 +1714,12 @@ void DependencyPipe::createSegFeatureVector(DependencyInstance* inst, int wordid
 
 	code = fe->genCodePF(HighOrder::SEG_PROB, 0);
 	addCode(TemplateType::THighOrder, code, segInst.prob, fv);
+
+	int len = min(5, segInst.element[segInst.size() - 1].en - segInst.element[0].st);
+	if (len > 0) {
+		code = fe->genCodePF(HighOrder::W_SEG_PROB, len);
+		addCode(TemplateType::THighOrder, code, segInst.prob, fv);
+	}
 
 	//code = fe->genCodeWF(HighOrder::W_SEG_PROB, inst->word[wordid].wordid);
 	//addCode(TemplateType::THighOrder, code, segInst.prob, fv);

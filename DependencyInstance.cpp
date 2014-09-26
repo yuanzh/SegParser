@@ -9,6 +9,8 @@
 #include "util/Constant.h"
 #include <boost/regex.hpp>
 #include "util/StringUtils.h"
+#include <float.h>
+#include "util/Logarithm.h"
 
 namespace segparser {
 
@@ -408,8 +410,21 @@ void DependencyInstance::output() {
 		for (unsigned int j = 0; j < segInst.morph.size(); ++j) {
 			cout << segInst.morph[j] << "_" << segInst.morphid[j] << "/";
 		}
+		vector<double> probList(word[i].candSeg.size());
 		for (unsigned int j = 0; j < word[i].candSeg.size(); ++j)
-			cout << "\t" << word[i].candSeg[j].prob;
+			probList[j] = word[i].candSeg[j].prob;
+
+		double sumScore = -DBL_MAX;
+		for (unsigned int j = 0; j < probList.size(); ++j) {
+			sumScore = logsumexp(sumScore, probList[j]);
+		}
+
+		for (unsigned int j = 0; j < probList.size(); ++j) {
+			probList[j] = exp(probList[j] - sumScore);
+		}
+
+		for (unsigned int j = 0; j < word[i].candSeg.size(); ++j)
+			cout << "\t" << probList[j] << "_" << word[i].candSeg[j].prob;
 		cout << endl;
 		for (int j = 0; j < segInst.size(); ++j) {
 			SegElement& ele = segInst.element[j];

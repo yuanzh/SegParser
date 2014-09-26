@@ -13,16 +13,15 @@
 
 namespace segparser {
 
-DependencyReader::DependencyReader(Options* options) : options(options) {
-}
-
 DependencyReader::DependencyReader(Options* options, string file) : options(options) {
 	hasCandidate = true;
+	isTrain = false;
 	startReading(file);
 }
 
 DependencyReader::DependencyReader() {
 	hasCandidate = true;
+	isTrain = false;
 }
 
 DependencyReader::~DependencyReader() {
@@ -99,9 +98,9 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 			for (unsigned int k = 0; k < ele.candPos.size(); ++k) {
 				sumPosProb += ele.candProb[k];
 
-				if (k > 0) {
-					assert(ele.candProb[k - 1] >= ele.candProb[k]);
-				}
+				//if (k > 0) {
+				//	assert(ele.candProb[k - 1] >= ele.candProb[k]);
+				//}
 			}
 			assert(sumPosProb > 0.0);
 			for (unsigned int k = 0; k < ele.candPos.size(); ++k) {
@@ -109,14 +108,14 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 				if (ele.candProb[k] > 1e-6)
 					ele.candProb[k] = log(ele.candProb[k]);
 				else
-					ele.candProb[k] = -20;
+					ele.candProb[k] = -1000000;
 			}
 		}
 		sumSegProb += word->candSeg[i].prob;
 
-		if (i > 0) {
-			assert(word->candSeg[i - 1].prob >= word->candSeg[i].prob);
-		}
+		//if (i > 0) {
+		//	assert(word->candSeg[i - 1].prob >= word->candSeg[i].prob);
+		//}
 	}
 
 	assert(sumSegProb > 0.0);
@@ -125,13 +124,13 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 		if (word->candSeg[i].prob > 1e-6)
 			word->candSeg[i].prob = log(word->candSeg[i].prob);
 		else
-			word->candSeg[i].prob = -20;
+			word->candSeg[i].prob = -1000000;
 	}
 }
 
 void DependencyReader::addGoldSegToCand(WordInstance* word) {
 	// add the gold seg in to seg candidate if not exist (with prob 0)
-	double prob = hasCandidate ? 0.0 : 1.0;
+	double prob = hasCandidate ? (isTrain ? 0.3 : 0.0) : 1.0;
 
 	string goldSegStr = word->goldForm[0];
 	for (unsigned int i = 1; i < word->goldForm.size(); ++i)
