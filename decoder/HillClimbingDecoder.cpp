@@ -79,10 +79,7 @@ void* hillClimbingThreadFunc(void* instance) {
 				pred.constructConversionList();
 			}
 
-			/*
-			pthread_mutex_lock(&data->updateMutex);
-
-			data->totRuns++;
+/*
 			bool hitGold = true;
 			if (gold) {
 				for (int i = 1; i < pred.numWord; ++i) {
@@ -92,21 +89,20 @@ void* hillClimbingThreadFunc(void* instance) {
 					}
 				}
 			}
-
-			pthread_mutex_unlock(&data->updateMutex);
-			*/
-
+*/
 			if (data->samplePos) {
 				for (int i = 1; i < pred.numWord; ++i) {
 					data->samplePos1O(&pred, gold, fe, i, r);
 				}
 			}
 
-			CacheTable* cache = fe->getCacheTable(&pred);
 			boost::shared_ptr<CacheTable> tmpCache = boost::shared_ptr<CacheTable>(new CacheTable());
-			if (!cache) {
-				cache = tmpCache.get();		// temporary cache for this run
-				tmpCache->initCacheTable(fe->type, &pred, fe->pfe.get(), data->options);
+			boost::shared_ptr<CacheTable> tmpSampleCache = boost::shared_ptr<CacheTable>(new CacheTable());
+
+			CacheTable* sampleCache = fe->getCacheTable(&pred);
+			if (!sampleCache) {
+				sampleCache = tmpSampleCache.get();		// temporary cache for this run
+				tmpSampleCache->initCacheTable(fe->type, &pred, fe->pfe.get(), data->options);
 			}
 
 			// sample a new tree from first order
@@ -115,303 +111,210 @@ void* hillClimbingThreadFunc(void* instance) {
 			int id = 1;		// skip root
 			for (int i = 1; i < pred.numWord; ++i) {
 				SegInstance& segInst = pred.word[i].getCurrSeg();
-
 				for (int j = 0; j < segInst.size(); ++j) {
-					if (data->options->heuristicDep) {
-						if (j == segInst.inNode)
-							toBeSampled[id] = true;
-						else
-							toBeSampled[id] = false;
-					}
-					else {
-						toBeSampled[id] = true;
-					}
+					toBeSampled[id] = true;
 					id++;
 				}
 			}
 			assert(id == len);
 
-			//if (selfid == 0)
-			//	cout << "first order sampling 2" << endl;
-			Timer ts;
-			bool ok = data->randomWalkSampler(&pred, gold, fe, cache, toBeSampled, r, T);
-			if (!ok) {
-				T *= 0.5;
-				continue;
-			}
-			if (selfid == 0)
-				data->sampleTime += ts.stop();
-			//if (selfid == 0)
-			//	cout << "first order sampling 3" << endl;
-			pred.buildChild();
-			//if (selfid == 0)
-			//	cout << "first order sampling 4" << endl;
+			int miniConverge = 3;
+			double currBestScore = -DBL_MAX;
+			int miniUnchange = 0;
+			int outloop = 0;
+			VariableInfo copy;
+			copy.copyInfoFromInst(&pred);
+			VariableInfo currBest;
 
-			// improve tree by hill climbing
+			while (miniUnchange < miniConverge && outloop < 100) {
+				outloop++;
+
+				copy.loadInfoToInst(&pred);
+				pred.constructConversionList();
+				pred.setOptSegPosCount();
+
+				Timer ts;
+				bool ok = data->randomWalkSampler(&pred, gold, fe, sampleCache, toBeSampled, r, T);
+				if (!ok) {
+					T *= 0.5;
+					continue;
+				}
+				if (selfid == 0)
+					data->sampleTime += ts.stop();
+
+				pred.buildChild();
+
+				int loop = 0;
+	            bool change = true;
+	            CacheTable* cache = sampleCache;
+	            Timer tc;
+
+	            /*
+				pthread_mutex_lock(&data->updateMutex);
+				data->totRuns++;
+				pthread_mutex_unlock(&data->updateMutex);
+				*/
+
+				while (change && loop < 20) {
+	            	change = false;
+	            	loop++;
+
+	            	// improve tree
+	            	vector<HeadIndex> idx(len);
+	            	HeadIndex root(0, 0);
+	            	int id = data->getBottomUpOrder(&pred, root, idx, idx.size() - 1);
+	            	assert(id == 0);
+
+	            	for (unsigned int y = 1; y < idx.size(); ++y) {
+	            		HeadIndex& m = idx[y];
+
+	            		// find the optimum head (cost augmented)
+	            		//double currScore = fe->getScore(&pred, cache);
+	            		//if (gold) {
+	            		// add loss
+	            		//	currScore += fe->parameters->wordDepError(gold->word[m.hWord], pred.word[m.hWord]);
+	            		//}
+	            		double depChanged = data->findOptHead(&pred, gold, m, fe, cache);
+	            		assert(depChanged > -1e-6);
+	            		if (depChanged > 1e-6) {
+	            			//double newScore = fe->getScore(&pred, cache);
+	            			//if (gold) {
+	            			// add loss
+	            			//	newScore += fe->parameters->wordDepError(gold->word[m.hWord], pred.word[m.hWord]);
+	            			//}
+	            			//assert(abs(newScore - currScore - depChanged) < 1e-6);
+	            			change = true;
+	            		}
+
+	            	}
+
+	            	// improve bigram
+	            	for (unsigned int i = 0; i < idx.size(); ++i) idx[i] = HeadIndex();
+	            	id = data->getBottomUpOrder(&pred, root, idx, idx.size() - 1);
+	            	assert(id == 0);
+
+	            	for (unsigned int y = 1; y < idx.size(); ++y) {
+	            		HeadIndex& m = idx[y];
+
+	            		int mIndex = pred.wordToSeg(m);
+	            		if (mIndex + 1 >= pred.getNumSeg()) {
+	            			continue;
+	            		}
+
+	            		HeadIndex n = pred.segToWord(mIndex + 1);
+	            		if (pred.getElement(m).dep != pred.getElement(n).dep) {
+	            			// not same head
+	            			continue;
+	            		}
+
+	            		// find the optimum head (cost augmented)
+	            		//double currScore = fe->getScore(&pred, cache);
+	            		//if (gold) {
+	            		// add loss
+	            		//	for (int i = 1; i < pred.numWord; ++i)
+	            		//		currScore += fe->parameters->wordDepError(gold->word[i], pred.word[i]);
+	            		//}
+	            		double depChanged = data->findOptBigramHead(&pred, gold, m, n, fe, cache);
+	            		assert(depChanged > -1e-6);
+	            		if (depChanged > 1e-6) {
+	            			//double newScore = fe->getScore(&pred, cache);
+	            			//if (gold) {
+	            			// add loss
+	            			//	for (int i = 1; i < pred.numWord; ++i)
+	            			//		newScore += fe->parameters->wordDepError(gold->word[i], pred.word[i]);
+	            			//}
+	            			//assert(abs(newScore - currScore - depChanged) < 1e-6);
+	            			change = true;
+	            		}
+	            	}
+
+	                // improve pos
+	                if (data->samplePos) {
+	                	vector<HeadIndex> idx(len);
+	                	HeadIndex root(0, 0);
+	                	int id = data->getBottomUpOrder(&pred, root, idx, idx.size() - 1);
+	                	assert(id == 0);
+
+	                	for (unsigned int y = 1; y < idx.size(); ++y) {
+	                		HeadIndex& m = idx[y];
+	       	     			//double currScore = fe->getScore(&pred);
+	       	     			//if (gold) {
+	       	     			//	currScore += fe->parameters->wordError(gold->word[m.hWord], pred.word[m.hWord]);
+	       	     			//}
+	                		double posChanged = data->findOptPos(&pred, gold, m, fe, cache);
+	                		assert(posChanged > -1e-6);
+	                		if (posChanged > 1e-6) {
+	                			// update cache table
+	                			cache = fe->getCacheTable(&pred);
+	       	   	     			//double newScore = fe->getScore(&pred);
+	           	     			//if (gold) {
+	           	     			//	newScore += fe->parameters->wordError(gold->word[m.hWord], pred.word[m.hWord]);
+	           	     			//}
+	       	   	     			//assert(abs(newScore - currScore - posChanged) < 1e-6);
+	                			change = true;
+	                		}
+	                	}
+	                }
+
+	    			if (!cache) {
+	    				tmpCache = boost::shared_ptr<CacheTable>(new CacheTable());
+	    				cache = tmpCache.get();		// temporary cache for this run
+	    				tmpCache->initCacheTable(fe->type, &pred, fe->pfe.get(), data->options);
+	    			}
+	            }
+
 /*
-			// improve pos
-			{
-   	      		vector<HeadIndex> idx(len);
-   	      		HeadIndex root(0, 0);
-   	     		int id = data->getBottomUpOrder(&pred, root, idx, idx.size() - 1);
-   	     		assert(id == 0);
+	            if (gold && hitGold) {
+	                pthread_mutex_lock(&data->updateMutex);
 
-   	     		for (unsigned int y = 1; y < idx.size(); ++y) {
-   	     			HeadIndex& m = idx[y];
-   	     			bool posChanged = data->findOptPos(&pred, gold, m, fe, cache);
-   	     			if (posChanged) {
-   	     				// update cache table
-   	     				cache = fe->getCacheTable(&pred);
-   	     			}
-  	     		}
-
-   	     		if (fe->pfe) {
-   	     			// has pruner, need to sample the tree again
-					if (!cache) {
-						tmpCache = boost::shared_ptr<CacheTable>(new CacheTable());
-						cache = tmpCache.get();		// temporary cache for this run
-						tmpCache->initCacheTable(fe->type, &pred, fe->pfe.get(), data->options);
-					}
-
-					id = 1;		// skip root
+	                data->hitGoldSegCount++;
+					bool hitGoldPos = true;
 					for (int i = 1; i < pred.numWord; ++i) {
-						SegInstance& segInst = pred.word[i].getCurrSeg();
-
-						for (int j = 0; j < segInst.size(); ++j) {
-							if (toBeSampled[id]) {
-								segInst.element[j].dep.setIndex(-1, 0);
+						for (int j = 0; j < pred.word[i].getCurrSeg().size(); ++j) {
+							if (pred.word[i].getCurrSeg().element[j].currPosCandID != gold->word[i].getCurrSeg().element[j].currPosCandID) {
+								hitGoldPos = false;
+								break;
 							}
-							id++;
 						}
 					}
+					if (hitGoldPos) {
+						data->hitGoldSegPosCount++;
+					}
 
-					data->randomWalkSampler(&pred, gold, fe, cache, toBeSampled, r);
-   	     			pred.buildChild();
-  	     		}
-			}
+					pthread_mutex_unlock(&data->updateMutex);
 
-			if (!cache) {
-				tmpCache = boost::shared_ptr<CacheTable>(new CacheTable());
-				cache = tmpCache.get();		// temporary cache for this run
-				tmpCache->initCacheTable(fe->type, &pred, fe->pfe.get(), data->options);
-			}
+	            }
 */
 
-			//if (selfid == 0)
-			//	cout << "hill climbing" << endl;
+				if (selfid == 0)
+					data->climbTime += tc.stop();
 
-			int outloop = 0;
-            bool outchange = true;
-            Timer tc;
+	            if (loop >= 20) {
+	            	cout << "Warning: many loops" << endl;
+	            }
 
-            while (outchange && outloop < 20) {
-            	outchange = false;
-            	outloop++;
-
-    			//if (selfid == 0)
-    			//	cout << "hill climbing tree" << endl;
-
-    			bool change = true;
-    			int loop = 0;
-    			//if (selfid == 0)
-    			//	data->debug("aaa: ", selfid);
-    			while (change && loop < 20) {
-    				change = false;
-    				loop++;		// avoid dead loop
-
-    				//if (selfid == 0)
-    				//	cout << "hill climb 1: " << loop << endl;
-
-    				// improve tree
-       	      		vector<HeadIndex> idx(len);
-       	      		HeadIndex root(0, 0);
-       	     		int id = data->getBottomUpOrder(&pred, root, idx, idx.size() - 1);
-       	     		assert(id == 0);
-
-       	     		for (unsigned int y = 1; y < idx.size(); ++y) {
-       	     			HeadIndex& m = idx[y];
-
-       	     			// find optimum pos
-       	     			//double currScore = fe->getScore(&pred);
-    					//if (gold) {
-    						// add loss
-    					//	currScore += fe->parameters->wordError(gold->word[m.hWord], pred.word[m.hWord]);
-    					//}
-     	     			//double posChanged = data->findOptPos(&pred, gold, m, fe, cache);
-       	     			//if (posChanged > 1e-6) {
-       	     				// update cache table
-       	     			//	cache = fe->getCacheTable(&pred);
-       	   	     			//double newScore = fe->getScore(&pred);
-       						//if (gold) {
-       							// add loss
-       						//	newScore += fe->parameters->wordError(gold->word[m.hWord], pred.word[m.hWord]);
-       						//}
-       						//if (newScore <= currScore + 1e-6) {
-       						//	cout << newScore << " " << currScore << endl;
-       						//}
-       	   	     			//assert(abs(newScore - currScore - posChanged) < 1e-6);
-       	   	     		//	change = true;
-       	     			//}
-
-       	     			// find the optimum head (cost augmented)
-       	     			//HeadIndex o = pred.getElement(m).dep;
-       	     			//double currScore = fe->getScore(&pred, cache);
-    					//if (gold) {
-    						// add loss
-    					//	currScore += fe->parameters->wordDepError(gold->word[m.hWord], pred.word[m.hWord]);
-    					//}
-       	     			double depChanged = data->findOptHead(&pred, gold, m, fe, cache);
-       	     			//if (c && selfid == 0) {
-       	     			//	cout << m << " " << o << " " << pred.getElement(m).dep << endl;
-       	     			//}
-       	     			assert(depChanged > -1e-6);
-       	     			if (depChanged > 1e-6) {
-       	   	     			//double newScore = fe->getScore(&pred, cache);
-       						//if (gold) {
-       							// add loss
-       						//	newScore += fe->parameters->wordDepError(gold->word[m.hWord], pred.word[m.hWord]);
-       						//}
-       	   	     			//assert(abs(newScore - currScore - depChanged) < 1e-6);
-       	   	     			change = true;
-       	   	     			outchange = true;
-       	     			}
-
-    				}
-
-   	     			// improve bigram
-
-    				//if (selfid == 0)
-    				//	cout << "hill climb 2: " << loop << endl;
-
-       	      		for (unsigned int i = 0; i < idx.size(); ++i) idx[i] = HeadIndex();
-       	     		id = data->getBottomUpOrder(&pred, root, idx, idx.size() - 1);
-       	     		assert(id == 0);
-
-       	     		for (unsigned int y = 1; y < idx.size(); ++y) {
-       	     			HeadIndex& m = idx[y];
-
-						int mIndex = pred.wordToSeg(m);
-						if (mIndex + 1 >= pred.getNumSeg()) {
-							continue;
-						}
-
-						HeadIndex n = pred.segToWord(mIndex + 1);
-						if (pred.getElement(m).dep != pred.getElement(n).dep) {
-							// not same head
-							continue;
-						}
-
-       	     			// find the optimum head (cost augmented)
-       	     			//double currScore = fe->getScore(&pred, cache);
-    					//if (gold) {
-    						// add loss
-    					//	for (int i = 1; i < pred.numWord; ++i)
-    					//		currScore += fe->parameters->wordDepError(gold->word[i], pred.word[i]);
-    					//}
-       	     			double depChanged = data->findOptBigramHead(&pred, gold, m, n, fe, cache);
-    					assert(depChanged > -1e-6);
-       	     			if (depChanged > 1e-6) {
-           	     			//double newScore = fe->getScore(&pred, cache);
-        					//if (gold) {
-        						// add loss
-        					//	for (int i = 1; i < pred.numWord; ++i)
-        					//		newScore += fe->parameters->wordDepError(gold->word[i], pred.word[i]);
-        					//}
-        					//assert(abs(newScore - currScore - depChanged) < 1e-6);
-       	   	     			change = true;
-       	   	     			outchange = true;
-       	     			}
-       	     		}
-
-    				//if (selfid == 0)
-    				//	cout << "hill climb 3: " << loop << endl;
-
-    			}
-
-    			if (loop >= 20) {
-    				cout << "Warning: many in loops" << endl;
-    			}
-    			//if (selfid == 0)
-    			//	cout << "finish climbing. loop: " << loop << endl;
-
-
-                // improve pos
-                if (data->samplePos) {
-                	vector<HeadIndex> idx(len);
-                	HeadIndex root(0, 0);
-                	int id = data->getBottomUpOrder(&pred, root, idx, idx.size() - 1);
-                	assert(id == 0);
-
-                	for (unsigned int y = 1; y < idx.size(); ++y) {
-                		HeadIndex& m = idx[y];
-       	     			//double currScore = fe->getScore(&pred);
-       	     			//if (gold) {
-       	     			//	currScore += fe->parameters->wordError(gold->word[m.hWord], pred.word[m.hWord]);
-       	     			//}
-                		double posChanged = data->findOptPos(&pred, gold, m, fe, cache);
-                		assert(posChanged > -1e-6);
-                		if (posChanged > 1e-6) {
-                			// update cache table
-                			cache = fe->getCacheTable(&pred);
-       	   	     			//double newScore = fe->getScore(&pred);
-           	     			//if (gold) {
-           	     			//	newScore += fe->parameters->wordError(gold->word[m.hWord], pred.word[m.hWord]);
-           	     			//}
-       	   	     			//assert(abs(newScore - currScore - posChanged) < 1e-6);
-                			outchange = true;
-                		}
-                	}
-                }
-
-    			if (!cache) {
-    				tmpCache = boost::shared_ptr<CacheTable>(new CacheTable());
-    				cache = tmpCache.get();		// temporary cache for this run
-    				tmpCache->initCacheTable(fe->type, &pred, fe->pfe.get(), data->options);
-    			}
-
-            }
-
-            /*
-            if (gold && hitGold) {
-                pthread_mutex_lock(&data->updateMutex);
-
-                data->hitGoldSegCount++;
-				bool hitGoldPos = true;
-				for (int i = 1; i < pred.numWord; ++i) {
-					for (int j = 0; j < pred.word[i].getCurrSeg().size(); ++j) {
-						if (pred.word[i].getCurrSeg().element[j].currPosCandID != gold->word[i].getCurrSeg().element[j].currPosCandID) {
-							hitGoldPos = false;
-							break;
-						}
-					}
-				}
-				if (hitGoldPos) {
-					data->hitGoldSegPosCount++;
+	            assert(cache->numSeg == pred.getNumSeg());
+				double currScore = fe->getScore(&pred, cache);
+				if (gold) {
+					for (int i = 1; i < pred.numWord; ++i)
+						currScore += fe->parameters->wordDepError(gold->word[i], pred.word[i]);
 				}
 
-				pthread_mutex_unlock(&data->updateMutex);
-
-            }
-            */
-
-			if (selfid == 0)
-				data->climbTime += tc.stop();
-
-            if (outloop >= 20) {
-            	cout << "Warning: many out loops" << endl;
-            }
-
-            //pred.constructConversionList();
-            //pred.setOptSegPosCount();
-            //pred.buildChild();
-			double currScore = fe->getScore(&pred, cache);
-			if (gold) {
-				for (int i = 1; i < pred.numWord; ++i)
-					currScore += fe->parameters->wordDepError(gold->word[i], pred.word[i]);
+				if (currScore > currBestScore + 1e-6) {
+					currBestScore = currScore;
+					currBest.copyInfoFromInst(&pred);
+					miniUnchange = 0;
+				}
+				else {
+					miniUnchange++;
+				}
 			}
 
-			//double tmps = 0.0;
-    		//double currBest = currScore;
+            if (outloop >= 100) {
+            	cout << "Warning: many out loops" << endl;
+            }
+    		//if (selfid == 0)
+    		//	cout << "out loop: " << outloop << endl;
 
 			pthread_mutex_lock(&data->updateMutex);
 
@@ -419,27 +322,23 @@ void* hillClimbingThreadFunc(void* instance) {
 				done = true;
 			else if (gold && data->unChangeIter >= data->earlyStopIter && data->bestScore >= goldScore - 1e-6) {
 				// early stop
-				//cout << "early stop" << endl;
 				done = true;
 			}
 
-			if (currScore > data->bestScore + 1e-6) {
-				data->bestScore = currScore;
+			if (currBestScore > data->bestScore + 1e-6) {
+				data->bestScore = currBestScore;
+				currBest.loadInfoToInst(&pred);
 				data->best.copyInfoFromInst(&pred);
 				if (!done) {
 					if (gold && data->unChangeIter >= data->earlyStopIter && data->bestScore >= goldScore - 1e-6) {
-						//done = true;
 						cout << " (" << data->unChangeIter << ") ";
 					}
-					//else {
 					data->unChangeIter = 0;
-					//}
 				}
 			}
 			else {
 				data->unChangeIter++;
 			}
-			//tmps = data->bestScore;
 
 			pthread_mutex_unlock(&data->updateMutex);
 		}
@@ -463,7 +362,7 @@ void* hillClimbingThreadFunc(void* instance) {
 
 HillClimbingDecoder::HillClimbingDecoder(Options* options, int thread, int convergeIter) : DependencyDecoder(options), thread(thread), convergeIter(convergeIter) {
 	cout << "converge iter: " << convergeIter << endl;
-	earlyStopIter = 40;
+	earlyStopIter = 5;
     samplePos = true;
     sampleSeg = true;
 }
