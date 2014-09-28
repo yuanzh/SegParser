@@ -559,7 +559,7 @@ int main(int argc, char** argv) {
 	    SegParser sp(&pipe, &options);
 	    sp.pruner = pruner;
 
-	   // sp.loadModel(options.modelName + ".train");
+	    //sp.loadModel(options.modelName + ".train");
 
 	    int numFeats = pipe.dataAlphabet->size() - 1;
 	    int numTypes = pipe.typeAlphabet->size() - 1;

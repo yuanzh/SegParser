@@ -79,7 +79,7 @@ void* hillClimbingThreadFunc(void* instance) {
 				pred.constructConversionList();
 			}
 
-/*
+			/*
 			bool hitGold = true;
 			if (gold) {
 				for (int i = 1; i < pred.numWord; ++i) {
@@ -89,7 +89,8 @@ void* hillClimbingThreadFunc(void* instance) {
 					}
 				}
 			}
-*/
+			*/
+
 			if (data->samplePos) {
 				for (int i = 1; i < pred.numWord; ++i) {
 					data->samplePos1O(&pred, gold, fe, i, r);
@@ -263,7 +264,7 @@ void* hillClimbingThreadFunc(void* instance) {
 	    			}
 	            }
 
-/*
+				/*
 	            if (gold && hitGold) {
 	                pthread_mutex_lock(&data->updateMutex);
 
@@ -284,7 +285,7 @@ void* hillClimbingThreadFunc(void* instance) {
 					pthread_mutex_unlock(&data->updateMutex);
 
 	            }
-*/
+				*/
 
 				if (selfid == 0)
 					data->climbTime += tc.stop();
@@ -636,10 +637,10 @@ void HillClimbingDecoder::train(DependencyInstance* gold, DependencyInstance* pr
 			cout << "\t";
     	}
     	cout << endl;
-*/
-    	//pred->output();
-    	//gold->output();
 
+    	pred->output();
+    	gold->output();
+*/
     	cout << "use gold seg and pos" << endl;
         setGoldSegAndPos(pred, gold);
 
