@@ -1614,13 +1614,14 @@ void DependencyPipe::createPosHOFeatureVector(DependencyInstance* inst, HeadInde
 
 	code = fe->genCodePWF(HighOrder::P_nnL, P, nnL);
 	addCode(TemplateType::THighOrder, code, fv);
+
+	code = fe->genCodePWWF(HighOrder::pL_P_L, P, pL, L);
+	addCode(TemplateType::THighOrder, code, fv);
+
+	code = fe->genCodePWWF(HighOrder::P_L_nL, P, L, nL);
+	addCode(TemplateType::THighOrder, code, fv);
+
 	if (options->lang == PossibleLang::Chinese) {
-
-		code = fe->genCodePWWF(HighOrder::pL_P_L, P, pL, L);
-		addCode(TemplateType::THighOrder, code, fv);
-
-		code = fe->genCodePWWF(HighOrder::P_L_nL, P, L, nL);
-		addCode(TemplateType::THighOrder, code, fv);
 
 		//code = fe->genCodePWWF(HighOrder::pL_P_nL, P, pL, nL);
 		//addCode(TemplateType::THighOrder, code, fv);
@@ -1715,10 +1716,12 @@ void DependencyPipe::createSegFeatureVector(DependencyInstance* inst, int wordid
 	code = fe->genCodePF(HighOrder::SEG_PROB, 0);
 	addCode(TemplateType::THighOrder, code, segInst.prob, fv);
 
-	int len = min(5, segInst.element[segInst.size() - 1].en - segInst.element[0].st);
-	if (len > 0) {
-		code = fe->genCodePF(HighOrder::W_SEG_PROB, len);
-		addCode(TemplateType::THighOrder, code, segInst.prob, fv);
+	if (options->lang == PossibleLang::Chinese && wordid > 0) {
+		int len = min(5, segInst.element[segInst.size() - 1].en - segInst.element[0].st);
+		if (len > 0) {
+			code = fe->genCodePF(HighOrder::W_SEG_PROB, len);
+			addCode(TemplateType::THighOrder, code, segInst.prob, fv);
+		}
 	}
 
 	//code = fe->genCodeWF(HighOrder::W_SEG_PROB, inst->word[wordid].wordid);
