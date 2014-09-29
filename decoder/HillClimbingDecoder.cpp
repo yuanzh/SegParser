@@ -463,7 +463,7 @@ void* hillClimbingThreadFunc(void* instance) {
 
 HillClimbingDecoder::HillClimbingDecoder(Options* options, int thread, int convergeIter) : DependencyDecoder(options), thread(thread), convergeIter(convergeIter) {
 	cout << "converge iter: " << convergeIter << endl;
-	earlyStopIter = 40;
+	earlyStopIter = 50;
     samplePos = true;
     sampleSeg = true;
 }
