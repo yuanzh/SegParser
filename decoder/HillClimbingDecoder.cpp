@@ -65,7 +65,7 @@ void* hillClimbingThreadFunc(void* instance) {
 		// begin sampling
 		bool done = false;
 		int iter = 0;
-		double T = 0.5;
+		double T = 0.25;
 		for (iter = 0; iter < maxIter && !done; ++iter) {
 
 			//if (selfid == 0)
@@ -422,7 +422,7 @@ void* hillClimbingThreadFunc(void* instance) {
 
 HillClimbingDecoder::HillClimbingDecoder(Options* options, int thread, int convergeIter) : DependencyDecoder(options), thread(thread), convergeIter(convergeIter) {
 	cout << "converge iter: " << convergeIter << endl;
-	earlyStopIter = 40;
+	earlyStopIter = 20;
     samplePos = false;
     sampleSeg = false;
 }
