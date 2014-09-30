@@ -162,6 +162,7 @@ void DependencyPipe::buildDictionary(string& goldfile) {
 	reader.close();
 
 	cout << "Done." << endl;
+	cout << "Sentence: " << cnt << endl;
 
 	setAndCheckOffset();
 }
