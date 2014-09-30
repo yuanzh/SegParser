@@ -412,7 +412,6 @@ void SegParser::loadModel(string file) {
 	if (options->useSP) {
 		long code = pipe->fe->genCodePF(HighOrder::SEG_PROB, 0);
 		int index = pipe->dataAlphabet->lookupIndex(TemplateType::THighOrder, code, false);
-		assert(index > 0);
 		cout << "seg weight: " << parameters->parameters[index] << endl;
 
 		code = pipe->fe->genCodePF(HighOrder::POS_PROB, 1);
@@ -523,19 +522,19 @@ int main(int argc, char** argv) {
 
 			prunerPipe.loadCoarseMap(prunerOptions.trainFile);
 
-			vector<inst_ptr> trainingData = prunerPipe.createInstances(prunerOptions.trainFile);
+			//vector<inst_ptr> trainingData = prunerPipe.createInstances(prunerOptions.trainFile);
 
 			pruner = new SegParser(&prunerPipe, &prunerOptions);
 			pruner->pruner = NULL;
-/*
+
 			pruner->loadModel(options.modelName + ".pruner");
 
 			int numFeats = prunerPipe.dataAlphabet->size() - 1;
 			int numTypes = prunerPipe.typeAlphabet->size() - 1;
 			cout << "Pruner Num Feats: " << numFeats << endl;
 			cout << "Pruner Num Edge Labels: " << numTypes << endl;
-*/
 
+/*
 			int numFeats = prunerPipe.dataAlphabet->size() - 1;
 			int numTypes = prunerPipe.typeAlphabet->size() - 1;
 			cout << "Pruner Num Feats: " << numFeats << endl;
@@ -543,7 +542,7 @@ int main(int argc, char** argv) {
 
 			pruner->train(trainingData);
 			pruner->closeDecoder();
-
+*/
 			pruner->evaluatePruning();
 		}
 
@@ -559,7 +558,7 @@ int main(int argc, char** argv) {
 	    SegParser sp(&pipe, &options);
 	    sp.pruner = pruner;
 
-	   // sp.loadModel(options.modelName + ".train");
+	    sp.loadModel(options.modelName + ".train");
 
 	    int numFeats = pipe.dataAlphabet->size() - 1;
 	    int numTypes = pipe.typeAlphabet->size() - 1;

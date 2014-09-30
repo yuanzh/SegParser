@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <utility>
 #include <boost/regex.hpp>
+#include "../util/Constant.h"
 
 namespace segparser {
 
@@ -105,10 +106,17 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 			assert(sumPosProb > 0.0);
 			for (unsigned int k = 0; k < ele.candPos.size(); ++k) {
 				ele.candProb[k] /= sumPosProb;
-				if (ele.candProb[k] > 1e-6)
-					ele.candProb[k] = log(ele.candProb[k]);
-				else
-					ele.candProb[k] = -1000000;
+				if (options->lang != PossibleLang::Arabic) {
+					if (ele.candProb[k] > 1e-6)
+						ele.candProb[k] = log(ele.candProb[k]);
+					else
+						ele.candProb[k] = -1000000;
+				}
+				else {
+					if (!isTrain && ele.candProb[k] < 1e-6) {
+						ele.candProb[k] = -1000000;
+					}
+				}
 			}
 		}
 		sumSegProb += word->candSeg[i].prob;
@@ -121,16 +129,27 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 	assert(sumSegProb > 0.0);
 	for (unsigned int i = 0; i < word->candSeg.size(); ++i) {
 		word->candSeg[i].prob /= sumSegProb;
-		if (word->candSeg[i].prob > 1e-6)
-			word->candSeg[i].prob = log(word->candSeg[i].prob);
-		else
-			word->candSeg[i].prob = -1000000;
+		if (options->lang != PossibleLang::Arabic) {
+			if (word->candSeg[i].prob > 1e-6)
+				word->candSeg[i].prob = log(word->candSeg[i].prob);
+			else
+				word->candSeg[i].prob = -1000000;
+		}
+		else {
+			if (!isTrain && word->candSeg[i].prob < 1e-6) {
+				word->candSeg[i].prob = -1000000;
+			}
+		}
 	}
 }
 
 void DependencyReader::addGoldSegToCand(WordInstance* word) {
 	// add the gold seg in to seg candidate if not exist (with prob 0)
 	double prob = hasCandidate ? (isTrain ? 0.3 : 0.0) : 1.0;
+
+	if (options->lang == PossibleLang::Arabic) {
+		prob = hasCandidate ? 0.0 : 1.0;
+	}
 
 	string goldSegStr = word->goldForm[0];
 	for (unsigned int i = 1; i < word->goldForm.size(); ++i)

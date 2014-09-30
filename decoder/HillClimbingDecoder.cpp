@@ -79,7 +79,7 @@ void* hillClimbingThreadFunc(void* instance) {
 				pred.constructConversionList();
 			}
 
-			/*
+/*
 			pthread_mutex_lock(&data->updateMutex);
 
 			data->totRuns++;
@@ -94,7 +94,7 @@ void* hillClimbingThreadFunc(void* instance) {
 			}
 
 			pthread_mutex_unlock(&data->updateMutex);
-			*/
+*/
 
 			if (data->samplePos) {
 				for (int i = 1; i < pred.numWord; ++i) {
@@ -147,55 +147,6 @@ void* hillClimbingThreadFunc(void* instance) {
 			//if (selfid == 0)
 			//	cout << "first order sampling 4" << endl;
 
-			// improve tree by hill climbing
-/*
-			// improve pos
-			{
-   	      		vector<HeadIndex> idx(len);
-   	      		HeadIndex root(0, 0);
-   	     		int id = data->getBottomUpOrder(&pred, root, idx, idx.size() - 1);
-   	     		assert(id == 0);
-
-   	     		for (unsigned int y = 1; y < idx.size(); ++y) {
-   	     			HeadIndex& m = idx[y];
-   	     			bool posChanged = data->findOptPos(&pred, gold, m, fe, cache);
-   	     			if (posChanged) {
-   	     				// update cache table
-   	     				cache = fe->getCacheTable(&pred);
-   	     			}
-  	     		}
-
-   	     		if (fe->pfe) {
-   	     			// has pruner, need to sample the tree again
-					if (!cache) {
-						tmpCache = boost::shared_ptr<CacheTable>(new CacheTable());
-						cache = tmpCache.get();		// temporary cache for this run
-						tmpCache->initCacheTable(fe->type, &pred, fe->pfe.get(), data->options);
-					}
-
-					id = 1;		// skip root
-					for (int i = 1; i < pred.numWord; ++i) {
-						SegInstance& segInst = pred.word[i].getCurrSeg();
-
-						for (int j = 0; j < segInst.size(); ++j) {
-							if (toBeSampled[id]) {
-								segInst.element[j].dep.setIndex(-1, 0);
-							}
-							id++;
-						}
-					}
-
-					data->randomWalkSampler(&pred, gold, fe, cache, toBeSampled, r);
-   	     			pred.buildChild();
-  	     		}
-			}
-
-			if (!cache) {
-				tmpCache = boost::shared_ptr<CacheTable>(new CacheTable());
-				cache = tmpCache.get();		// temporary cache for this run
-				tmpCache->initCacheTable(fe->type, &pred, fe->pfe.get(), data->options);
-			}
-*/
 
 			//if (selfid == 0)
 			//	cout << "hill climbing" << endl;
@@ -231,30 +182,6 @@ void* hillClimbingThreadFunc(void* instance) {
        	     		for (unsigned int y = 1; y < idx.size(); ++y) {
        	     			HeadIndex& m = idx[y];
 
-       	     			// find optimum pos
-       	     			//double currScore = fe->getScore(&pred);
-    					//if (gold) {
-    						// add loss
-    					//	currScore += fe->parameters->wordError(gold->word[m.hWord], pred.word[m.hWord]);
-    					//}
-     	     			//double posChanged = data->findOptPos(&pred, gold, m, fe, cache);
-       	     			//if (posChanged > 1e-6) {
-       	     				// update cache table
-       	     			//	cache = fe->getCacheTable(&pred);
-       	   	     			//double newScore = fe->getScore(&pred);
-       						//if (gold) {
-       							// add loss
-       						//	newScore += fe->parameters->wordError(gold->word[m.hWord], pred.word[m.hWord]);
-       						//}
-       						//if (newScore <= currScore + 1e-6) {
-       						//	cout << newScore << " " << currScore << endl;
-       						//}
-       	   	     			//assert(abs(newScore - currScore - posChanged) < 1e-6);
-       	   	     		//	change = true;
-       	     			//}
-
-       	     			// find the optimum head (cost augmented)
-       	     			//HeadIndex o = pred.getElement(m).dep;
        	     			//double currScore = fe->getScore(&pred, cache);
     					//if (gold) {
     						// add loss
@@ -371,7 +298,7 @@ void* hillClimbingThreadFunc(void* instance) {
 
             }
 
-            /*
+/*
             if (gold && hitGold) {
                 pthread_mutex_lock(&data->updateMutex);
 
@@ -392,7 +319,7 @@ void* hillClimbingThreadFunc(void* instance) {
 				pthread_mutex_unlock(&data->updateMutex);
 
             }
-            */
+*/
 
 			if (selfid == 0)
 				data->climbTime += tc.stop();
@@ -737,10 +664,10 @@ void HillClimbingDecoder::train(DependencyInstance* gold, DependencyInstance* pr
 			cout << "\t";
     	}
     	cout << endl;
-*/
-    	//pred->output();
-    	//gold->output();
 
+    	pred->output();
+    	gold->output();
+*/
     	cout << "use gold seg and pos" << endl;
         setGoldSegAndPos(pred, gold);
 
