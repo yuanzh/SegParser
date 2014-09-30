@@ -85,13 +85,13 @@ bool DependencyInstance::isPunc(string& w) {
 bool DependencyInstance::isCoord(int lang, string& w) {
 	switch (lang) {
 		case PossibleLang::Arabic:
-			if (w.compare("w") == 0 || w.compare(">w") == 0 || w.compare(">n") == 0)
+			if (/*w.compare("w") == 0 || */w.compare(">w") == 0/* || w.compare(">n") == 0*/)
 				return true;
 			else
 				return false;
 			break;
 		case PossibleLang::SPMRL:
-			if (w.compare("w") == 0 || w.compare(">w") == 0 || w.compare(">n") == 0)
+			if (/*w.compare("w") == 0 || */w.compare(">w") == 0/* || w.compare(">n") == 0*/)
 				return true;
 			else
 				return false;

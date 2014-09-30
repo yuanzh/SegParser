@@ -1836,7 +1836,19 @@ vector<HeadIndex> DependencyPipe::findConjArg(DependencyInstance* s, HeadIndex& 
 		else {
 			right.setIndex(-1, 0);
 		}
-	} else {
+	}
+	else if (options->lang == PossibleLang::SPMRL || options->lang == PossibleLang::Arabic) {
+		// head left arg right
+		//   0   1    2    3
+		if (ele.dep < arg) {
+			left = ele.dep;
+			if (left.hWord != -1) {
+				head = s->getElement(left).dep;
+				right = findRightNearestChild(ele.child, arg);
+			}
+		}
+	}
+	else {
 		ThrowException("undefined cc type");
 	}
 

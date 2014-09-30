@@ -76,6 +76,7 @@ public:
 	bool evalPunc;
 	bool useTedEval;
 	bool jointSegPos;
+	int earlyStop;
 
 	bool addLoss;
 

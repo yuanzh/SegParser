@@ -74,6 +74,7 @@ Options::Options() {
 	evalPunc = true;
 	useTedEval = false;
 	jointSegPos = false;
+	earlyStop = 20;
 
 	addLoss = false;
 }
@@ -151,6 +152,9 @@ void Options::processArguments(int argc, char** argv) {
 		}
 		if (pair[0].compare("evalpunc") == 0) {
 			evalPunc = (pair[1] == "true" ? true : false);
+		}
+		if (pair[0].compare("earlystop") == 0) {
+			earlyStop = atoi(pair[1].c_str());
 		}
 	}
 
@@ -235,6 +239,7 @@ void Options::outputArg() {
 //	cout << "restart iter: " << restartIter << endl;
 	cout << "train converge iter: " << trainConvergeIter << endl;
 	cout << "test converge iter: " << testConvergeIter << endl;
+	cout << "early stop: " << earlyStop << endl;
 	cout << "tedeval: " << useTedEval << endl;
 	cout << "joint seg pos: " << jointSegPos << endl;
 	cout << "prune: " << trainPruner << endl;
