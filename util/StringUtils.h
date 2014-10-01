@@ -25,8 +25,4 @@ extern void Trim(const string &delim, string *line);
 
 extern void ThrowException(const string& msg);
 
-extern int ChineseStringLength(const string& str);
-
-extern string GetChineseChar(const string& str, int k);
-
 #endif /* STRINGUTILS_H_ */

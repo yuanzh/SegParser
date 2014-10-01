@@ -79,8 +79,6 @@ double FeatureVector::dotProduct(FeatureVector* fv) {
 //		assert(dpVec[normalIndex[i]] == 0.0);
 //	}
 
-	double b = 2.0;
-
 	for(unsigned int i = 0; i < binaryIndex.size(); ++i) {
 		dpVec[binaryIndex[i]] += 1.0;
 	}
@@ -88,8 +86,7 @@ double FeatureVector::dotProduct(FeatureVector* fv) {
 		dpVec[negBinaryIndex[i]] -= 1.0;
 	}
 	for(unsigned int i = 0; i < normalIndex.size(); ++i) {
-		double val = min(b, max(-b, normalValue[i]));
-		dpVec[normalIndex[i]] += val;
+		dpVec[normalIndex[i]] += normalValue[i];
 	}
 
 	for(unsigned int i = 0; i < fv->binaryIndex.size(); ++i) {
@@ -99,8 +96,7 @@ double FeatureVector::dotProduct(FeatureVector* fv) {
 		result -= dpVec[fv->negBinaryIndex[i]];
 	}
 	for(unsigned int i = 0; i < fv->normalIndex.size(); ++i) {
-		double val = min(b, max(-b, fv->normalValue[i]));
-		result += dpVec[fv->normalIndex[i]] * val;
+		result += dpVec[fv->normalIndex[i]] * fv->normalValue[i];
 	}
 
 	for(unsigned int i = 0; i < binaryIndex.size(); ++i) {

@@ -7,7 +7,6 @@
 
 #include <iostream>
 #include "StringUtils.h"
-#include <assert.h>
 
 // Split string str on any delimiting character in delim, and write the result
 // as a vector of strings.
@@ -59,28 +58,3 @@ void ThrowException(const string& msg) {
 	cerr << msg << endl;
 	exit(-1);
 }
-
-int ChineseStringLength(const string& str) {
-	int p = 0;
-	int len = 0;
-	while (str.find("ASC/", p) != string::npos) {
-		len++;
-		p = str.find("ASC/", p) + 4;
-	}
-	return len;
-}
-
-string GetChineseChar(const string& str, int k) {
-	int p = 0;
-	for (int i = 0; i < k; ++i) {
-		assert(str.find("ASC/", p) != string::npos);
-		p = str.find("ASC/", p) + 4;
-	}
-
-	int st = str.find("ASC/", p);
-	int en = str.find("ASC/", st + 4);
-
-	return str.substr(st, (en == (int)string::npos ? string::npos : en - st));
-}
-
-
