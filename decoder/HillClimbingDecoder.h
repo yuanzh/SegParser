@@ -24,10 +24,8 @@ public:
 	void waitAndGetResult(DependencyInstance* inst);
 	void decode(DependencyInstance* inst, DependencyInstance* gold, FeatureExtractor* fe);
 	void train(DependencyInstance* gold, DependencyInstance* pred, FeatureExtractor* fe, int trainintIter);
-	double findOptHead(DependencyInstance* pred, DependencyInstance* gold, HeadIndex& m, FeatureExtractor* fe, CacheTable* cache);
-	double findOptBigramHead(DependencyInstance* pred, DependencyInstance* gold, HeadIndex& m, HeadIndex& n, FeatureExtractor* fe, CacheTable* cache);
-	double findOptPos(DependencyInstance* pred, DependencyInstance* gold, HeadIndex& m, FeatureExtractor* fe, CacheTable* cache);
-	double findOptSeg(DependencyInstance* pred, DependencyInstance* gold, HeadIndex& m, FeatureExtractor* fe, CacheTable* cache);
+	bool findOptHead(DependencyInstance* pred, DependencyInstance* gold, HeadIndex& m, FeatureExtractor* fe, CacheTable* cache);
+	bool findOptPos(DependencyInstance* pred, DependencyInstance* gold, HeadIndex& m, FeatureExtractor* fe, CacheTable* cache);
 
 	void debug(string msg, int id);
 
@@ -50,13 +48,6 @@ public:
 	int thread;
 
 	int convergeIter;
-
-	int earlyStopIter;
-	bool samplePos;
-	bool sampleSeg;
-	int hitGoldSegCount;
-	int hitGoldSegPosCount;
-	int totRuns;
 };
 
 } /* namespace segparser */

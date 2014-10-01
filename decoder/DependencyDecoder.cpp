@@ -137,12 +137,7 @@ void DependencyDecoder::initInst(DependencyInstance* inst, FeatureExtractor* fe)
 			}
 		}
 		assert(id == len);
-		double T = 0.3;
-		bool ok = randomWalkSampler(inst, NULL, fe, cache, toBeSampled, r, T);
-		while (!ok) {
-			T *= 0.5;
-			ok = randomWalkSampler(inst, NULL, fe, cache, toBeSampled, r, T);
-		}
+		randomWalkSampler(inst, NULL, fe, cache, toBeSampled, r);
 	}
 
 	inst->buildChild();
@@ -372,14 +367,50 @@ double DependencyDecoder::sampleSegPos(DependencyInstance* inst, DependencyInsta
 	return prob;
 }
 
-double DependencyDecoder::samplePos1O(DependencyInstance* inst, DependencyInstance* gold, FeatureExtractor* fe, int wordID, Random& r) {
+double DependencyDecoder::sampleSegPos1O(DependencyInstance* inst, DependencyInstance* gold, FeatureExtractor* fe, int wordID, Random& r) {
 	WordInstance& word = inst->word[wordID];
 	vector<double> probList(word.candSeg.size());
+	int oldSegID = word.currSegCandID;
+	// sample seg first
+	for (unsigned int i = 0; i < word.candSeg.size(); ++i) {
+		word.currSegCandID = i;
+		probList[i] = fe->getSegScore(inst, wordID);
+		if (gold) {
+			SegInstance& goldInst = gold->word[wordID].getCurrSeg();
+			double loss = ((int)i != gold->word[wordID].currSegCandID) ?
+					1.5 * 0.5 * (word.candSeg[i].size() + goldInst.size()) : 0.0; // consistent with parameter::wordError
+			probList[i] += loss;
+		}
+	}
+	word.currSegCandID = oldSegID;
+	convertScoreToProb(probList);
+	int sample = samplePoint(probList, r);
+	updateSeg(inst, word, sample);
+	if (oldSegID != sample) {
+		inst->constructConversionList();
+	}
+	//double prob = word.getCurrSeg().prob;
+	double prob = probList[word.currSegCandID];
+
+	// remove all arcs to this word and build heuristic dep if needed
 	SegInstance& segInst = word.getCurrSeg();
+	for (int i = 0; i < inst->numWord; ++i) {
+		if (i == wordID)
+			continue;
+		SegInstance& tmpSeg = inst->word[i].getCurrSeg();
+		for (int j = 0; j < tmpSeg.size(); ++j)
+			if (tmpSeg.element[j].dep.hWord == wordID) {
+				if (options->heuristicDep) {
+					tmpSeg.element[j].dep.setIndex(wordID, segInst.outNode);
+				}
+				else {
+					tmpSeg.element[j].dep.setIndex(-1, 0);
+				}
+			}
+	}
 
 	// sample pos next;
 	word.optPosCount = 0;
-	double prob = 1.0;
 	for (int i = 0; i < segInst.size(); ++i) {
 		HeadIndex m(wordID, i);
 
@@ -388,41 +419,22 @@ double DependencyDecoder::samplePos1O(DependencyInstance* inst, DependencyInstan
 
 		for (int j = 0; j < ele.candPosNum(); ++j) {
 			ele.currPosCandID = j;
-
 			probList[j] = fe->getPos1OScore(inst, m);
-			//probList[j] = ele.candProb[j];
-			FeatureVector tmpfv;
-			fe->pipe->createPosHOFeatureVector(inst, m, true, &tmpfv);
-			probList[j] += fe->parameters->getScore(&tmpfv);
-
+			double loss = 0.0;
 			if (gold) {
 				SegInstance& goldInst = gold->word[wordID].getCurrSeg();
-				double loss = 0.0;
 
 				if (word.currSegCandID == gold->word[wordID].currSegCandID
 						&& j != goldInst.element[j].currPosCandID) {
-					//loss = 1.5;
-					loss = 1.0;
+					loss = 1.5;
 				}
-				probList[j] += loss;
 			}
-
-			//if (ele.candProb[j] < -15.0)
-			//	probList[j] = -20.0;
-			//else
-			//probList[j] = 0.0;
+			probList[j] += loss;
 		}
-
-		//if (gold) {
-			for (unsigned int z = 0; z < probList.size(); ++z) {
-				probList[z] *= 0.5;
-			}
-		//}
-
 		convertScoreToProb(probList);
 		int sample = samplePoint(probList, r);
 		ele.currPosCandID = sample;
-		word.optPosCount += (ele.currPosCandID == 0 ? 1 : 0);
+		word.optPosCount += ele.currPosCandID == 0;
 		prob *= probList[ele.currPosCandID];
 	}
 
@@ -452,62 +464,6 @@ double DependencyDecoder::samplePos1O(DependencyInstance* inst, DependencyInstan
 		else {
 			segInst.element[j].dep.setIndex(-1, 0);
 		}
-	}
-	return prob;
-}
-
-double DependencyDecoder::sampleSeg1O(DependencyInstance* inst, DependencyInstance* gold, FeatureExtractor* fe, int wordID, Random& r) {
-	WordInstance& word = inst->word[wordID];
-	vector<double> probList(word.candSeg.size());
-	int oldSegID = word.currSegCandID;
-	// sample seg first
-	for (unsigned int i = 0; i < word.candSeg.size(); ++i) {
-		word.currSegCandID = i;
-
-		probList[i] = fe->getSegScore(inst, wordID);
-		//probList[i] = word.candSeg[i].prob;
-
-		if (gold) {
-			//SegInstance& goldInst = gold->word[wordID].getCurrSeg();
-			double loss = ((int)i != gold->word[wordID].currSegCandID) ?
-					//0.5 * (word.getCurrSeg().size() + goldInst.size()) : 0.0; // consistent with parameter::wordError
-					1.0 : 0.0;
-			probList[i] += loss;
-		}
-
-		//if (word.candSeg[i].prob < -15.0)
-		//	probList[i] = -20.0;
-		//else
-		//probList[i] = 0.0;
-	}
-	word.currSegCandID = oldSegID;
-
-	//if (gold) {
-		for (unsigned int i = 0; i < probList.size(); ++i) {
-			probList[i] *= 0.5;
-		}
-	//}
-
-	convertScoreToProb(probList);
-	int sample = samplePoint(probList, r);
-	updateSeg(inst, word, sample);
-	double prob = probList[word.currSegCandID];
-
-	// remove all arcs to this word and build heuristic dep if needed
-	SegInstance& segInst = word.getCurrSeg();
-	for (int i = 0; i < inst->numWord; ++i) {
-		if (i == wordID)
-			continue;
-		SegInstance& tmpSeg = inst->word[i].getCurrSeg();
-		for (int j = 0; j < tmpSeg.size(); ++j)
-			if (tmpSeg.element[j].dep.hWord == wordID) {
-				if (options->heuristicDep) {
-					tmpSeg.element[j].dep.setIndex(wordID, segInst.outNode);
-				}
-				else {
-					tmpSeg.element[j].dep.setIndex(-1, 0);
-				}
-			}
 	}
 
 	return prob;
@@ -550,11 +506,6 @@ void DependencyDecoder::getFirstOrderVec(DependencyInstance* inst, DependencyIns
 
 		for (int hs = 0; hs < segInst.size(); ++hs) {
 			segID++;
-
-			if (hw == m.hWord && hs == m.hSeg) {
-				assert(isPruned[segID]);
-			}
-
 			if (isPruned[segID]) {
 				continue;
 			}
@@ -580,7 +531,6 @@ void DependencyDecoder::getFirstOrderVec(DependencyInstance* inst, DependencyIns
 			score.push_back(arcScore);
 		}
 	}
-	assert(segID == (int)isPruned.size() - 1);
 	predSegEle.dep = oldDep;
 }
 
@@ -656,8 +606,8 @@ double DependencyDecoder::sampleMHDepProb(DependencyInstance* inst, DependencyIn
 	return prob;
 }
 
-bool DependencyDecoder::randomWalkSampler(DependencyInstance* pred, DependencyInstance* gold, FeatureExtractor* fe,
-		CacheTable* cache, vector<bool>& toBeSampled, Random& r, double T) {
+void DependencyDecoder::randomWalkSampler(DependencyInstance* pred, DependencyInstance* gold, FeatureExtractor* fe,
+		CacheTable* cache, vector<bool>& toBeSampled, Random& r) {
 	// basically, the subtrees which is not to be sampled will be collapsed into one node
 	int len = toBeSampled.size();
 	assert(len == pred->getNumSeg());
@@ -678,7 +628,7 @@ bool DependencyDecoder::randomWalkSampler(DependencyInstance* pred, DependencyIn
 					assert(j == segInst.inNode);
 				}
 				assert(id == pred->wordToSeg(i, j));
-				segInst.element[j].dep.setIndex(-1, 0);
+				assert(segInst.element[j].dep.hWord  == -1);
 			}
 			id++;
 		}
@@ -693,18 +643,13 @@ bool DependencyDecoder::randomWalkSampler(DependencyInstance* pred, DependencyIn
 			HeadIndex curr(i, j);
 			int currid = pred->wordToSeg(curr);
 
-			int loop = 0;
-			//vector<HeadIndex> trace;
-			while (!inTree[currid] && loop < 5000) {
-				//trace.push_back(curr);
+			while (!inTree[currid]) {
 				if (toBeSampled[currid]) {
 					vector<HeadIndex> candH;
 					vector<double> score;
 
 					getFirstOrderVec(pred, gold, fe, curr, cache, false, candH, score);
 					assert(score.size() > 0);
-					for (unsigned int z = 0; z < score.size(); ++z)
-						score[z] *= T;
 					convertScoreToProb(score);
 					int sample = samplePoint(score, r);
 
@@ -716,50 +661,17 @@ bool DependencyDecoder::randomWalkSampler(DependencyInstance* pred, DependencyIn
 				//if (pred->getElement(curr).dep.hWord != -1 && toBeSampled[currid] && !inTree[currid]) {
 				//	cycleErase(pred, curr, toBeSampled);
 				//}
-				loop++;
 			}
-			if (loop >= 5000) {
-				//cout << "loop bug 1" << endl;
-				//for (unsigned int z = 0; z < trace.size(); ++z) {
-				//	cout << trace[z] << " ";
-				//}
-				//cout << endl;
-/*
-				HeadIndex root(0, 0);
-				for (int w = 1; w < pred->numWord; ++w) {
-					SegInstance& segInst = pred->word[w].getCurrSeg();
-
-					for (int s = 0; s < segInst.size(); ++s) {
-						HeadIndex m(w, s);
-						cout << m << " " << fe->getArcScore(fe, pred, root, m, cache)
-								<< " " << (segInst.element[s].dep.hWord == -1 ? -10.0 : fe->getArcScore(fe, pred, segInst.element[s].dep, m, cache))
-								<< endl;
-					}
-				}
-
-				pred->output();
-				*/
-				cout << "sample failed T=" << T << endl;
-				return false;
-			}
-			assert(loop < 5000);
 
 			curr.setIndex(i, j);
 			currid = pred->wordToSeg(curr);
-			loop = 0;
-			while (!inTree[currid] && loop < 10000) {
+			while (!inTree[currid]) {
 				inTree[currid] = true;
 				curr = pred->getElement(curr).dep;
 				currid = pred->wordToSeg(curr);
-				loop++;
 			}
-			if (loop >= 10000) {
-				cout << "loop bug 2" << endl;
-			}
-			assert(loop < 10000);
 		}
 	}
-	return true;
 }
 
 void DependencyDecoder::cycleErase(DependencyInstance* inst, HeadIndex i, vector<bool>& toBeSampled) {
@@ -778,80 +690,6 @@ void DependencyDecoder::cycleErase(DependencyInstance* inst, HeadIndex i, vector
 		cnt++;
 		assert(cnt < 10000);
 	}
-}
-
-void DependencyDecoder::updateSeg(DependencyInstance* pred, DependencyInstance* gold, HeadIndex& m,
-		int newSeg, int oldSeg, int baseOptSeg, int baseOptPos, vector<int>& oldPos, vector<HeadIndex>& oldHeadIndex,
-		vector<HeadIndex>& relatedChildren, vector<int>& relatedOldParent) {
-	WordInstance& word = pred->word[m.hWord];
-	pred->optSegCount = baseOptSeg + (newSeg == 0 ? 1 : 0);
-	word.currSegCandID = newSeg;
-	int index = oldSeg * word.candSeg.size() + newSeg;		// change from oldSeg to i
-	word.optPosCount = baseOptPos;
-
-	for (int j = 0; j < word.getCurrSeg().size(); ++j) {
-		SegElement& newEle = word.getCurrSeg().element[j];
-		int inMapIndex = word.inMap[index][j];
-		assert(inMapIndex < (int)oldPos.size());
-
-		bool findOldPos = false;
-		// find pos
-		for (int k = 0; k < newEle.candPosNum(); ++k)
-			if (newEle.candPosid[k] == oldPos[inMapIndex]) {
-				findOldPos = true;
-				newEle.currPosCandID = k;
-				word.optPosCount += (k == 0 ? 1 : 0);
-			}
-		if (!findOldPos) {
-			newEle.currPosCandID = 0;
-			word.optPosCount++;
-		}
-
-		// find head
-		newEle.dep.hWord = -1;
-		if (oldHeadIndex[inMapIndex].hWord == m.hWord) {
-			// the head is in the changed word, so check if it becomes a self loop
-			int oldHeadSegIndex = oldHeadIndex[inMapIndex].hSeg;
-			int oldHeadWordIndex = oldHeadIndex[inMapIndex].hWord;
-			assert(oldHeadSegIndex < (int)word.outMap[index].size());
-			int loop = 0;
-			while (loop < 100 && oldHeadWordIndex == m.hWord && word.outMap[index][oldHeadSegIndex] == j) {
-				// a self loop, recursively find its head
-				assert(oldHeadSegIndex < (int)oldHeadIndex.size());
-				oldHeadSegIndex = oldHeadIndex[oldHeadSegIndex].hSeg;
-				oldHeadWordIndex = oldHeadIndex[oldHeadSegIndex].hWord;
-			}
-			assert(loop < 100);		// should not have dead loop
-			if (oldHeadWordIndex == m.hWord)
-				newEle.dep = HeadIndex(oldHeadWordIndex, word.outMap[index][oldHeadSegIndex]);
-			else
-				newEle.dep = HeadIndex(oldHeadWordIndex, oldHeadSegIndex);
-		}
-		else {
-			newEle.dep = oldHeadIndex[inMapIndex];
-		}
-
-	}
-
-	// change related children
-	for (unsigned int j = 0; j < relatedChildren.size(); ++j) {
-		assert(relatedOldParent[j] < (int)word.outMap[index].size());
-		pred->getElement(relatedChildren[j]).dep = HeadIndex(m.hWord, word.outMap[index][relatedOldParent[j]]);
-	}
-}
-
-
-void DependencyDecoder::setGoldSegAndPos(DependencyInstance* pred, DependencyInstance* gold) {
-	for (int i = 1; i < pred->numWord; ++i) {
-		pred->word[i].currSegCandID = gold->word[i].currSegCandID;
-		SegInstance& segInst = pred->word[i].getCurrSeg();
-		for (int j = 0; j < segInst.size(); ++j) {
-			segInst.element[j].currPosCandID = gold->word[i].getCurrSeg().element[j].currPosCandID;
-			segInst.element[j].dep.setIndex(-1, 0);
-		}
-	}
-	pred->constructConversionList();
-	pred->setOptSegPosCount();
 }
 
 } /* namespace segparser */

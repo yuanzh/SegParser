@@ -14,10 +14,8 @@ namespace segparser {
 Parameters::Parameters(int size, Options* options)
 	: size(size), options(options){
 	parameters.clear();
-	//tmpParams.clear();
 	total.clear();
 	parameters.resize(size, 0.0);
-	//tmpParams.resize(size, 0.0);
 	total.resize(size, 0.0);
 }
 
@@ -26,7 +24,6 @@ Parameters::~Parameters() {
 
 void Parameters::copyParams(Parameters* param) {
 	parameters = param->parameters;
-	//tmpParams = param->tmpParams;
 	total = param->total;
 	size = param->size;
 	options = param->options;
@@ -36,8 +33,6 @@ void Parameters::averageParams(double avVal) {
 	std::cout << "update time: " << avVal << std::endl;
 	for (int j = 0; j < size; ++j)
 		parameters[j] -= (avVal == 0 ? 0 : total[j] / avVal);
-	//for (int j = 0; j < size; ++j)
-	//	parameters[j] = tmpParams[j] - (avVal == 0 ? 0 : total[j] / avVal);
 }
 
 int Parameters::maxMatch(SegInstance& gold, SegInstance& pred, vector<int>& match) {
@@ -117,7 +112,7 @@ double Parameters::numError(DependencyInstance* gold, DependencyInstance* pred) 
 				SegElement& predEle = predSeg.element[j];
 
 				if (goldEle.currPosCandID != predEle.currPosCandID) {
-					e += 1.0;
+					e += 1.5;
 				}
 				else if (goldEle.dep != predEle.dep) {
 					e += 1.0;
@@ -134,16 +129,15 @@ double Parameters::numError(DependencyInstance* gold, DependencyInstance* pred) 
 
 double Parameters::elementError(WordInstance& gold, WordInstance& pred, int segid) {
 	double e = 0.0;
-
 	if (gold.currSegCandID != pred.currSegCandID) {
-		e += 2.0;		// this value should not matter...
+		e += 1.5;
 	}
 	else {
 		SegElement& goldEle = gold.getCurrSeg().element[segid];
 		SegElement& predEle = pred.getCurrSeg().element[segid];
 
 		if (goldEle.currPosCandID != predEle.currPosCandID) {
-			e += 1.0;		// this value should not matter...
+			e += 1.5;
 		}
 		else if (goldEle.dep != predEle.dep) {
 			e += 1.0;
@@ -153,26 +147,13 @@ double Parameters::elementError(WordInstance& gold, WordInstance& pred, int segi
 		}
 
 	}
-
-/*
-	if (gold.currSegCandID == pred.currSegCandID) {
-		SegElement& goldEle = gold.getCurrSeg().element[segid];
-		SegElement& predEle = pred.getCurrSeg().element[segid];
-
-		if (goldEle.dep != predEle.dep) {
-			e = 1.0;
-		}
-
-	}
-*/
 	return e;
 }
 
 double Parameters::wordError(WordInstance& gold, WordInstance& pred) {
 	double e = 0.0;
-
 	if (gold.currSegCandID != pred.currSegCandID) {
-		e += 1.0 * (gold.getCurrSeg().size() + pred.getCurrSeg().size());
+		e += 1.5 * 0.5 * (gold.getCurrSeg().size() + pred.getCurrSeg().size());
 	}
 	else {
 		assert(gold.getCurrSeg().size() == pred.getCurrSeg().size());
@@ -184,7 +165,7 @@ double Parameters::wordError(WordInstance& gold, WordInstance& pred) {
 			assert(goldEle.labid == predEle.labid);
 
 			if (goldEle.currPosCandID != predEle.currPosCandID) {
-				e += 1.0;
+				e += 1.5;
 			}
 			else if (goldEle.dep != predEle.dep) {
 				e += 1.0;
@@ -194,48 +175,6 @@ double Parameters::wordError(WordInstance& gold, WordInstance& pred) {
 			}
 		}
 	}
-	return e;
-}
-
-double Parameters::wordDepError(WordInstance& gold, WordInstance& pred) {
-	double e = 0.0;
-
-	if (gold.currSegCandID != pred.currSegCandID) {
-		e += 1.0 * (gold.getCurrSeg().size() + pred.getCurrSeg().size());
-	}
-	else {
-		assert(gold.getCurrSeg().size() == pred.getCurrSeg().size());
-
-		for (int i = 0; i < gold.getCurrSeg().size(); ++i) {
-			SegElement& goldEle = gold.getCurrSeg().element[i];
-			SegElement& predEle = pred.getCurrSeg().element[i];
-
-			assert(goldEle.labid == predEle.labid);
-
-			if (goldEle.currPosCandID != predEle.currPosCandID) {
-				e += 1.0;
-			}
-			else if (goldEle.dep != predEle.dep) {
-				e += 1.0;
-			}
-			else if (goldEle.labid != predEle.labid) {
-				e += 0.5;
-			}
-		}
-	}
-
-/*
-	if (gold.currSegCandID == pred.currSegCandID) {
-		for (int i = 0; i < gold.getCurrSeg().size(); ++i) {
-			SegElement& goldEle = gold.getCurrSeg().element[i];
-			SegElement& predEle = pred.getCurrSeg().element[i];
-
-			if (goldEle.dep != predEle.dep) {
-				e += 1.0;
-			}
-		}
-	}
-*/
 	return e;
 }
 
@@ -262,19 +201,15 @@ void Parameters::update(DependencyInstance* target, DependencyInstance* curr,
 		// update theta
 		for (unsigned int i = 0; i < diffFv->binaryIndex.size(); ++i) {
 			parameters[diffFv->binaryIndex[i]] += alpha;
-			//tmpParams[diffFv->binaryIndex[i]] += alpha;
 			total[diffFv->binaryIndex[i]] += upd * alpha;
 		}
 		for (unsigned int i = 0; i < diffFv->negBinaryIndex.size(); ++i) {
 			parameters[diffFv->negBinaryIndex[i]] -= alpha;
-			//tmpParams[diffFv->negBinaryIndex[i]] -= alpha;
 			total[diffFv->negBinaryIndex[i]] -= upd * alpha;
 		}
 		for (unsigned int i = 0; i < diffFv->normalIndex.size(); ++i) {
-			double val = min(2.0, max(-2.0, diffFv->normalValue[i]));
-			parameters[diffFv->normalIndex[i]] += alpha * val;
-			//tmpParams[diffFv->normalIndex[i]] += alpha * val;
-			total[diffFv->normalIndex[i]] += upd * alpha * val;
+			parameters[diffFv->normalIndex[i]] += alpha * diffFv->normalValue[i];
+			total[diffFv->normalIndex[i]] += upd * alpha * diffFv->normalValue[i];
 		}
 	}
 }
@@ -282,6 +217,10 @@ void Parameters::update(DependencyInstance* target, DependencyInstance* curr,
 double Parameters::getScore(FeatureVector* fv) {
 	double score = 0.0;
 	for (unsigned int i = 0; i < fv->binaryIndex.size(); ++i) {
+		if (fv->binaryIndex[i] >= size) {
+			cout << "get score bug: " << fv->binaryIndex[i] << " " << size << endl;
+			exit(0);
+		}
 		score += parameters[fv->binaryIndex[i]];
 	}
 	for (unsigned int i = 0; i < fv->negBinaryIndex.size(); ++i) {

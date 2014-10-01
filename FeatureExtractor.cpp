@@ -535,15 +535,13 @@ void FeatureExtractor::setAtomic(int thread) {
 void FeatureExtractor::getArcFvUnsafe(FeatureExtractor* fe, DependencyInstance* inst, HeadIndex& h, HeadIndex& m,
 		FeatureVector* fv, CacheTable* cache) {
 	assert(fe->thread == 1);
-	int id = -1;
 	if (cache) {
 		int headIndex = inst->wordToSeg(h);
 		int modIndex = inst->wordToSeg(m);
 
-		id = cache->arc2ID(headIndex, modIndex);
-	}
-	if (id >= 0) {
-		//assert(id >= 0);
+		int id = cache->arc2ID(headIndex, modIndex);
+		assert(id >= 0);
+
 		int pos = id;
 		assert(pos < (int)cache->arc.size());
 		if (!cache->arc[pos]) {
@@ -564,15 +562,12 @@ void FeatureExtractor::getArcFvUnsafe(FeatureExtractor* fe, DependencyInstance* 
 void FeatureExtractor::getArcFvAtomic(FeatureExtractor* fe, DependencyInstance* inst, HeadIndex& h, HeadIndex& m,
 		FeatureVector* fv, CacheTable* cache) {
 	assert(fe->thread != 1);
-	int id = -1;
 	if (cache) {
 		int headIndex = inst->wordToSeg(h);
 		int modIndex = inst->wordToSeg(m);
 
-		id = cache->arc2ID(headIndex, modIndex);
-	}
-	if (id >= 0) {
-		//assert(id >= 0);
+		int id = cache->arc2ID(headIndex, modIndex);
+		assert(id >= 0);
 
 		int pos = id;
 		item_ptr tmp_ptr = atomic_load(&cache->arc[pos]);
@@ -597,15 +592,12 @@ void FeatureExtractor::getArcFvAtomic(FeatureExtractor* fe, DependencyInstance* 
 double FeatureExtractor::getArcScoreUnsafe(FeatureExtractor* fe, DependencyInstance* inst, HeadIndex& h, HeadIndex& m, CacheTable* cache) {
 	assert(fe->thread == 1);
 	double score = 0.0;
-	int id = -1;
 	if (cache) {
 		int headIndex = inst->wordToSeg(h);
 		int modIndex = inst->wordToSeg(m);
 
-		id = cache->arc2ID(headIndex, modIndex);
-	}
-	if (id >= 0) {
-		//assert(id >= 0);
+		int id = cache->arc2ID(headIndex, modIndex);
+		assert(id >= 0);
 
 		int pos = id;
 		if (!cache->arc[pos]) {
@@ -624,15 +616,12 @@ double FeatureExtractor::getArcScoreUnsafe(FeatureExtractor* fe, DependencyInsta
 double FeatureExtractor::getArcScoreAtomic(FeatureExtractor* fe, DependencyInstance* inst, HeadIndex& h, HeadIndex& m, CacheTable* cache) {
 	assert(fe->thread != 1);
 	double score = 0.0;
-	int id = -1;
 	if (cache) {
 		int headIndex = inst->wordToSeg(h);
 		int modIndex = inst->wordToSeg(m);
 
-		id = cache->arc2ID(headIndex, modIndex);
-	}
-	if (id >= 0) {
-		//assert(id >= 0);
+		int id = cache->arc2ID(headIndex, modIndex);
+		assert(id >= 0);
 
 		int pos = id;
 		item_ptr tmp_ptr = atomic_load(&cache->arc[pos]);
@@ -757,16 +746,13 @@ double FeatureExtractor::getSibsScoreAtomic(FeatureExtractor* fe, DependencyInst
 void FeatureExtractor::getTripsFvUnsafe(FeatureExtractor* fe, DependencyInstance* inst, HeadIndex& par, HeadIndex& ch1, HeadIndex& ch2,
 		FeatureVector* fv, CacheTable* cache) {
 	assert(fe->thread == 1);
-	int id = -1;
 	if (cache) {
 		int parIdx = inst->wordToSeg(par);
+		int ch1Idx = inst->wordToSeg(ch1);
 		int ch2Idx = inst->wordToSeg(ch2);
 
-		id = cache->arc2ID(parIdx, ch2Idx);
-	}
-	if (id >= 0) {
-		//assert(id >= 0);
-		int ch1Idx = inst->wordToSeg(ch1);
+		int id = cache->arc2ID(parIdx, ch2Idx);
+		assert(id >= 0);
 
 		int pos = id * cache->numSeg + ch1Idx;
 		assert(pos < (int)cache->trips.size());
@@ -788,16 +774,13 @@ void FeatureExtractor::getTripsFvUnsafe(FeatureExtractor* fe, DependencyInstance
 void FeatureExtractor::getTripsFvAtomic(FeatureExtractor* fe, DependencyInstance* inst, HeadIndex& par, HeadIndex& ch1, HeadIndex& ch2,
 		FeatureVector* fv, CacheTable* cache) {
 	assert(fe->thread != 1);
-	int id = -1;
 	if (cache) {
 		int parIdx = inst->wordToSeg(par);
+		int ch1Idx = inst->wordToSeg(ch1);
 		int ch2Idx = inst->wordToSeg(ch2);
 
-		id = cache->arc2ID(parIdx, ch2Idx);
-	}
-	if (id >= 0) {
-		//assert(id >= 0);
-		int ch1Idx = inst->wordToSeg(ch1);
+		int id = cache->arc2ID(parIdx, ch2Idx);
+		assert(id >= 0);
 
 		int pos = id * cache->numSeg + ch1Idx;
 		assert(pos < (int)cache->trips.size());
@@ -823,16 +806,13 @@ void FeatureExtractor::getTripsFvAtomic(FeatureExtractor* fe, DependencyInstance
 double FeatureExtractor::getTripsScoreUnsafe(FeatureExtractor* fe, DependencyInstance* inst, HeadIndex& par, HeadIndex& ch1, HeadIndex& ch2, CacheTable* cache) {
 	assert(fe->thread == 1);
 	double score = 0.0;
-	int id = -1;
 	if (cache) {
 		int parIdx = inst->wordToSeg(par);
+		int ch1Idx = inst->wordToSeg(ch1);
 		int ch2Idx = inst->wordToSeg(ch2);
 
-		id = cache->arc2ID(parIdx, ch2Idx);
-	}
-	if (id >= 0) {
-		//assert(id >= 0);
-		int ch1Idx = inst->wordToSeg(ch1);
+		int id = cache->arc2ID(parIdx, ch2Idx);
+		assert(id >= 0);
 
 		int pos = id * cache->numSeg + ch1Idx;
 		assert(pos < (int)cache->trips.size());
@@ -852,17 +832,26 @@ double FeatureExtractor::getTripsScoreUnsafe(FeatureExtractor* fe, DependencyIns
 double FeatureExtractor::getTripsScoreAtomic(FeatureExtractor* fe, DependencyInstance* inst, HeadIndex& par, HeadIndex& ch1, HeadIndex& ch2, CacheTable* cache) {
 	assert(fe->thread != 1);
 	double score = 0.0;
-	int id = -1;
 	if (cache) {
 		int parIdx = inst->wordToSeg(par);
+		int ch1Idx = inst->wordToSeg(ch1);
 		int ch2Idx = inst->wordToSeg(ch2);
 
-		id = cache->arc2ID(parIdx, ch2Idx);
-	}
-	if (id >= 0) {
+		int id = cache->arc2ID(parIdx, ch2Idx);
 
-		//assert(id >= 0);
-		int ch1Idx = inst->wordToSeg(ch1);
+		if (!(id >= 0)) {
+			cout << id << " " << cache->isPruned(parIdx, ch2Idx) << endl;
+			cout << par << " " << ch1 << " " << ch2 << endl;
+
+			for (int i = 1; i < inst->numWord; ++i) {
+				SegInstance& segInst = inst->word[i].getCurrSeg();
+				for (int j = 0; j < segInst.size(); ++j) {
+					cout << i << "/" << j << " " << segInst.element[j].form << " " << segInst.element[j].dep << endl;
+				}
+			}
+			cout << endl;
+		}
+		assert(id >= 0);
 
 		int pos = id * cache->numSeg + ch1Idx;
 		assert(pos < (int)cache->trips.size());
@@ -871,6 +860,7 @@ double FeatureExtractor::getTripsScoreAtomic(FeatureExtractor* fe, DependencyIns
 			getTripsFvAtomic(fe, inst, par, ch1, ch2, NULL, cache);
 		}
 		tmp_ptr = atomic_load(&(cache->trips[pos]));
+		//assert(tmp_ptr->flag == 123);
 		score += tmp_ptr->score;
 	}
 	else {
@@ -886,16 +876,13 @@ double FeatureExtractor::getTripsScoreAtomic(FeatureExtractor* fe, DependencyIns
 void FeatureExtractor::getGPCFvUnsafe(FeatureExtractor* fe, DependencyInstance* inst, HeadIndex& gp, HeadIndex& par, HeadIndex& c,
 		FeatureVector* fv, CacheTable* cache) {
 	assert(fe->thread == 1);
-	int id = -1;
 	if (cache) {
 		int gpIdx = inst->wordToSeg(gp);
 		int parIdx = inst->wordToSeg(par);
-
-		id = cache->arc2ID(gpIdx, parIdx);
-	}
-	if (id >= 0) {
-		//assert(id >= 0);
 		int cIdx = inst->wordToSeg(c);
+
+		int id = cache->arc2ID(gpIdx, parIdx);
+		assert(id >= 0);
 
 		int pos = id * cache->numSeg + cIdx;
 		assert(pos < (int)cache->gpc.size());
@@ -917,16 +904,13 @@ void FeatureExtractor::getGPCFvUnsafe(FeatureExtractor* fe, DependencyInstance* 
 void FeatureExtractor::getGPCFvAtomic(FeatureExtractor* fe, DependencyInstance* inst, HeadIndex& gp, HeadIndex& par, HeadIndex& c,
 		FeatureVector* fv, CacheTable* cache) {
 	assert(fe->thread != 1);
-	int id = -1;
 	if (cache) {
 		int gpIdx = inst->wordToSeg(gp);
 		int parIdx = inst->wordToSeg(par);
-
-		id = cache->arc2ID(gpIdx, parIdx);
-	}
-	if (id >= 0) {
-		//assert(id >= 0);
 		int cIdx = inst->wordToSeg(c);
+
+		int id = cache->arc2ID(gpIdx, parIdx);
+		assert(id >= 0);
 
 		int pos = id * cache->numSeg + cIdx;
 		assert(pos < (int)cache->gpc.size());
@@ -952,16 +936,13 @@ void FeatureExtractor::getGPCFvAtomic(FeatureExtractor* fe, DependencyInstance* 
 double FeatureExtractor::getGPCScoreUnsafe(FeatureExtractor* fe, DependencyInstance* inst, HeadIndex& gp, HeadIndex& par, HeadIndex& c, CacheTable* cache) {
 	assert(fe->thread == 1);
 	double score = 0.0;
-	int id = -1;
 	if (cache) {
 		int gpIdx = inst->wordToSeg(gp);
 		int parIdx = inst->wordToSeg(par);
-
-		id = cache->arc2ID(gpIdx, parIdx);
-	}
-	if (id >= 0) {
-		//assert(id >= 0);
 		int cIdx = inst->wordToSeg(c);
+
+		int id = cache->arc2ID(gpIdx, parIdx);
+		assert(id >= 0);
 
 		int pos = id * cache->numSeg + cIdx;
 		assert(pos < (int)cache->gpc.size());
@@ -981,16 +962,13 @@ double FeatureExtractor::getGPCScoreUnsafe(FeatureExtractor* fe, DependencyInsta
 double FeatureExtractor::getGPCScoreAtomic(FeatureExtractor* fe, DependencyInstance* inst, HeadIndex& gp, HeadIndex& par, HeadIndex& c, CacheTable* cache) {
 	assert(fe->thread != 1);
 	double score = 0.0;
-	int id = -1;
 	if (cache) {
 		int gpIdx = inst->wordToSeg(gp);
 		int parIdx = inst->wordToSeg(par);
-
-		id = cache->arc2ID(gpIdx, parIdx);
-	}
-	if (id >= 0) {
-		//assert(id >= 0);
 		int cIdx = inst->wordToSeg(c);
+
+		int id = cache->arc2ID(gpIdx, parIdx);
+		assert(id >= 0);
 
 		int pos = id * cache->numSeg + cIdx;
 		assert(pos < (int)cache->gpc.size());
@@ -1018,7 +996,7 @@ void FeatureExtractor::getPosHOFvUnsafe(FeatureExtractor* fe, DependencyInstance
 		int pos = inst->wordToSeg(m);
 		if (!cache->posho[pos]) {
 			item_ptr tmp_ptr = item_ptr(new CacheItem());
-			fe->pipe->createPosHOFeatureVector(inst, m, false, &tmp_ptr->fv);
+			fe->pipe->createPosHOFeatureVector(inst, m, &tmp_ptr->fv);
 			tmp_ptr->score = fe->parameters->getScore(&tmp_ptr->fv);
 			cache->posho[pos] = tmp_ptr;
 		}
@@ -1027,7 +1005,7 @@ void FeatureExtractor::getPosHOFvUnsafe(FeatureExtractor* fe, DependencyInstance
 	}
 	else {
 		if (fv)
-			fe->pipe->createPosHOFeatureVector(inst, m, false, fv);
+			fe->pipe->createPosHOFeatureVector(inst, m, fv);
 	}
 }
 
@@ -1038,7 +1016,7 @@ void FeatureExtractor::getPosHOFvAtomic(FeatureExtractor* fe, DependencyInstance
 		item_ptr tmp_ptr = atomic_load(&cache->posho[pos]);
 		if (!tmp_ptr) {
 			tmp_ptr = item_ptr(new CacheItem());
-			fe->pipe->createPosHOFeatureVector(inst, m, false, &tmp_ptr->fv);
+			fe->pipe->createPosHOFeatureVector(inst, m, &tmp_ptr->fv);
 			tmp_ptr->score = fe->parameters->getScore(&tmp_ptr->fv);
 			atomic_store(&cache->posho[pos], tmp_ptr);
 		}
@@ -1050,7 +1028,7 @@ void FeatureExtractor::getPosHOFvAtomic(FeatureExtractor* fe, DependencyInstance
 	}
 	else {
 		if (fv)
-			fe->pipe->createPosHOFeatureVector(inst, m, false, fv);
+			fe->pipe->createPosHOFeatureVector(inst, m, fv);
 	}
 }
 
@@ -1066,7 +1044,7 @@ double FeatureExtractor::getPosHOScoreUnsafe(FeatureExtractor* fe, DependencyIns
 	}
 	else {
 		FeatureVector fv;
-		fe->pipe->createPosHOFeatureVector(inst, m, false, &fv);
+		fe->pipe->createPosHOFeatureVector(inst, m, &fv);
 		score = fe->parameters->getScore(&fv);
 	}
 	return score;
@@ -1087,7 +1065,7 @@ double FeatureExtractor::getPosHOScoreAtomic(FeatureExtractor* fe, DependencyIns
 	}
 	else {
 		FeatureVector fv;
-		fe->pipe->createPosHOFeatureVector(inst, m, false, &fv);
+		fe->pipe->createPosHOFeatureVector(inst, m, &fv);
 		score = fe->parameters->getScore(&fv);
 	}
 	return score;
@@ -1195,92 +1173,6 @@ double FeatureExtractor::getPartialDepScore(DependencyInstance* s, HeadIndex& x,
 		}
 	}
 
-	if (options->useHO) {
-		FeatureVector fv;
-		pipe->createPartialHighOrderFeatureVector(s, x, false, &fv);
-		score += parameters->getScore(&fv);
-	}
-
-	return score;
-}
-
-double FeatureExtractor::getPartialBigramDepScore(DependencyInstance* s, HeadIndex& x, HeadIndex& y, CacheTable* cache) {
-	// get score;
-	double score = 0.0;
-
-	HeadIndex& h = s->getElement(x).dep;
-	assert(h == s->getElement(y).dep);
-
-	score += getArcScore(this, s, h, x, cache);
-	score += getArcScore(this, s, h, y, cache);
-
-	int mid = 0;
-	int xid = s->wordToSeg(x);
-
-	for (int i = 0; i < s->numWord; ++i) {
-		SegInstance& segInst = s->word[i].getCurrSeg();
-
-		for (int j = 0; j < segInst.size(); ++j) {
-			HeadIndex m(i, j);
-			HeadIndex h = segInst.element[j].dep;
-			int hid = s->wordToSeg(h);
-
-			vector<HeadIndex>& child = segInst.element[j].child;
-			int aid = pipe->findRightNearestChildID(child, m);
-
-			// right children
-			HeadIndex prev = m;
-			int previd = mid;
-			for (unsigned int k = aid; k < child.size(); ++k) {
-				HeadIndex curr = child[k];
-				int currid = s->wordToSeg(curr);
-				if (options->useCS) {
-					if (xid + 1 >= previd && xid <= currid) {
-						score += getTripsScore(this, s, m, prev, curr, cache);
-						score += getSibsScore(this, s, prev, curr, prev == m, cache);
-					}
-				}
-
-				prev = curr;
-				previd = currid;
-			}
-
-			// left children
-			prev = m;
-			previd = mid;
-			for (int k = aid - 1; k >= 0; --k) {
-				HeadIndex curr = child[k];
-				int currid = s->wordToSeg(curr);
-				if (options->useCS) {
-					if (xid + 1 >= currid && xid <= previd) {
-						score += getTripsScore(this, s, m, prev, curr, cache);
-						score += getSibsScore(this, s, prev, curr, prev == m, cache);
-					}
-				}
-
-				prev = curr;
-				previd = currid;
-			}
-
-			if (i > 0 && h.hWord >= 0) {
-				HeadIndex gp = s->getElement(h).dep;
-				if (options->useGP && gp.hWord >= 0) {
-					if (xid == mid || xid == hid || xid + 1 == mid || xid + 1 == hid) {
-						score += getGPCScore(this, s, gp, h, m, cache);
-					}
-				}
-			}
-
-			mid++;
-		}
-	}
-
-	if (options->useHO) {
-		FeatureVector fv;
-		pipe->createPartialHighOrderFeatureVector(s, x, true, &fv);
-		score += parameters->getScore(&fv);
-	}
-
 	return score;
 }
 
@@ -1300,9 +1192,9 @@ double FeatureExtractor::getPartialPosScore(DependencyInstance* s, HeadIndex& x,
 			int hid = s->wordToSeg(h);
 
 			if (i > 0 && h.hWord >= 0) {
-				int small = hid < mid ? hid : mid;
-				int large = hid > mid ? hid : mid;
-				if (xid >= small - 1 && xid <= large + 1) {
+				if ((xid >= mid - 1 && xid <= mid + 1)
+						|| (xid >= hid - 1 && xid <= hid + 1)
+						|| ((xid - mid) * (xid - hid) <= 0)) {
 					score += getArcScore(this, s, h, m, cache);
 				}
 
@@ -1367,13 +1259,12 @@ double FeatureExtractor::getPartialPosScore(DependencyInstance* s, HeadIndex& x,
 
 			mid++;
 		}
-
 	}
 	assert(mid == s->getNumSeg());
 
 	if (options->useHO) {
 		FeatureVector fv;
-		pipe->createPartialPosHighOrderFeatureVector(s, x, &fv);
+		pipe->createNonProjFeatureVector(s, &fv);
 		score += parameters->getScore(&fv);
 	}
 
@@ -1442,7 +1333,7 @@ double FeatureExtractor::getScore(DependencyInstance* s, CacheTable* cache) {
 
 	if (options->useHO) {
 		FeatureVector fv;
-		pipe->createHighOrderFeatureVector(s, &fv);
+		pipe->createNonProjFeatureVector(s, &fv);
 		score += parameters->getScore(&fv);
 	}
 
@@ -1527,7 +1418,7 @@ void FeatureExtractor::getFv(DependencyInstance* s, FeatureVector* fv) {
 	}
 
 	if (options->useHO) {
-		pipe->createHighOrderFeatureVector(s, fv);
+		pipe->createNonProjFeatureVector(s, fv);
 	}
 }
 
@@ -1631,27 +1522,7 @@ vector<bool> FeatureExtractor::isPruned(DependencyInstance* s, HeadIndex& m, Cac
 		else {
 			if (pruner) {
 				//ThrowException("isPruned: not implemented yet");
-				vector<bool> tmpPruned;
-				pfe->prune(s, m, tmpPruned);
-
-				int p = 0;
-				for (int hw = 0; hw < s->numWord; ++hw) {
-					SegInstance& headSeg = s->word[hw].getCurrSeg();
-					for (int hs = 0; hs < headSeg.size(); ++hs) {
-						if (hw != m.hWord || hs != m.hSeg) {
-							if (!tmpPruned[p]) {
-								pruned.push_back(false);
-							}
-							else {
-								pruned.push_back(true);
-							}
-							p++;
-						}
-						else {
-							pruned.push_back(true);
-						}
-					}
-				}
+				pfe->prune(s, m, pruned);
 			}
 			else {
 				for (int hw = 0; hw < s->numWord; ++hw) {

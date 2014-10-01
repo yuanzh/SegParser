@@ -85,7 +85,6 @@ void* decodeThreadFunc(void* instance) {
 	DependencyDecoder* decoder = DependencyDecoder::createDependencyDecoder(inst->options, inst->options->testingMode, inst->options->devThread, false);
 
 	decoder->initialize();
-	decoder->failTime = 0;
 
 	while(true) {
 		inst_ptr pred;
@@ -126,12 +125,7 @@ void* decodeThreadFunc(void* instance) {
 
 		//cout << "decode " << currProcessID << endl;
 
-		//if (currProcessID < 17) {
-		//	cout << "skip" << endl;
-		//}
-		//else {
-			decoder->decode(pred.get(), &gold, fe.get());
-		//}
+		decoder->decode(pred.get(), &gold, fe.get());
 
 		pthread_mutex_lock( &inst->finishMutex );
 
@@ -143,15 +137,11 @@ void* decodeThreadFunc(void* instance) {
 
 		pthread_mutex_unlock( &inst->finishMutex );
 
-		cout << "finish decode " << currProcessID << endl;
+		//cout << "finish decode " << currProcessID << endl;
 	}
-
-	cout << "Fail time: " << decoder->failTime << endl;
 
 	decoder->shutdown();
 	delete decoder;
-
-	cout << "decoder shutdown" << endl;
 
 	pthread_exit(NULL);
 	return NULL;
@@ -170,7 +160,6 @@ void* work(void* instance) {
 	if (!inst->options->jointSegPos)
 		inst->reader.hasCandidate = false;
 	inst->reader.startReading(inst->options, inst->devfile);
-	inst->reader.isTrain = false;
 
 	inst->currProcessID = 0;
 	inst->currFinishID = 0;
@@ -212,10 +201,8 @@ void* work(void* instance) {
 
 	for (int i = 0; i < inst->decodeThreadNum; ++i) {
 		pthread_join(inst->decodeThread[i], NULL);
-		cout << "decode thread " << i << " finish" << endl;
 	}
 	pthread_join(inst->outputThread, NULL);
-	cout << "output thread finish" << endl;
 
 	cout << endl;
 	cout << "-------------------------------------" << endl;
@@ -223,13 +210,13 @@ void* work(void* instance) {
 	cout << "Seg Acc: " << inst->corrWordSegNum / inst->wordNum << endl;
 	double segpre = inst->corrSegNum / inst->predSegNum;
 	double segrec = inst->corrSegNum / inst->goldSegNum;
-	cout << "Seg pre/rec/f1: " << segpre << " " << segrec << " " << (2 * segpre * segrec) / (segpre + segrec) << " " << inst->predSegNum << " " << inst->goldSegNum << endl;
+	cout << "Seg pre/rec/f1: " << segpre << " " << segrec << " " << (2 * segpre * segrec) / (segpre + segrec) << endl;
 	double pospre = inst->corrPosNum / inst->predSegNum;
 	double posrec = inst->corrPosNum / inst->goldSegNum;
-	cout << "Pos pre/rec/f1: " << pospre << " " << posrec << " " << (2 * pospre * posrec) / (pospre + posrec) << " " << inst->predSegNum << " " << inst->goldSegNum << endl;
+	cout << "Pos pre/rec/f1: " << pospre << " " << posrec << " " << (2 * pospre * posrec) / (pospre + posrec) << endl;
 	double deppre = inst->corrDepNum / inst->predDepNum;
 	double deprec = inst->corrDepNum / inst->goldDepNum;
-	cout << "Dep pre/rec/f1: " << deppre << " " << deprec << " " << (2 * deppre * deprec) / (deppre + deprec) << " " << inst->predDepNum << " " << inst->goldDepNum << endl;
+	cout << "Dep pre/rec/f1: " << deppre << " " << deprec << " " << (2 * deppre * deprec) / (deppre + deprec) << endl;
 	cout << endl;
 
 	if (inst->options->useTedEval) {
@@ -322,13 +309,6 @@ void DevelopmentThread::evaluate(DependencyInstance* inst, DependencyInstance* g
 		}
 	}
 
-	//for (int i = 1; i < inst->numWord; ++i) {
-	//	SegInstance& segInst = inst->word[i].getCurrSeg();
-	//	for (int j = 0; j < segInst.size(); ++j) {
-	//		assert(segInst.element[j].candProb[segInst.element[j].currPosCandID] >= 1e-6);
-	//	}
-	//}
-
 	int predLen = 0;
 	for (int i = 0; i < inst->numWord; ++i) {
 		SegInstance& predSegInst = inst->word[i].getCurrSeg();
@@ -419,9 +399,8 @@ void DevelopmentThread::evaluate(DependencyInstance* inst, DependencyInstance* g
 			}
 		}
 	}
-
+/*
 	//score
-	/*
 	FeatureVector fv;
 	sp->pipe->createFeatureVector(inst, &fv);
 	double predScore = sp->devParams->getScore(&fv);

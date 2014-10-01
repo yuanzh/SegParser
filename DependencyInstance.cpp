@@ -8,9 +8,6 @@
 #include "DependencyInstance.h"
 #include "util/Constant.h"
 #include <boost/regex.hpp>
-#include "util/StringUtils.h"
-#include <float.h>
-#include "util/Logarithm.h"
 
 namespace segparser {
 
@@ -85,22 +82,22 @@ bool DependencyInstance::isPunc(string& w) {
 bool DependencyInstance::isCoord(int lang, string& w) {
 	switch (lang) {
 		case PossibleLang::Arabic:
-			if (/*w.compare("w") == 0 || */w.compare(">w") == 0/* || w.compare(">n") == 0*/)
+			if (w.compare("w") == 0 || w.compare(">w") == 0 || w.compare(">n") == 0)
 				return true;
 			else
 				return false;
 			break;
 		case PossibleLang::SPMRL:
-			if (/*w.compare("w") == 0 || */w.compare(">w") == 0/* || w.compare(">n") == 0*/)
+			if (w.compare("w") == 0 || w.compare(">w") == 0 || w.compare(">n") == 0)
 				return true;
 			else
 				return false;
 			break;
 		case PossibleLang::Chinese:
-			//if (w.compare("和") == 0|| w.compare("或") == 0)
+			if (w.compare("和") == 0|| w.compare("或") == 0)
 				return true;
-			//else
-			//	return false;
+			else
+				return false;
 			break;
 		default:
 			return true;
@@ -119,114 +116,12 @@ string DependencyInstance::normalize(string s) {
 	return s;
 }
 
-int DependencyInstance::computeOverlap(SegElement& e1, SegElement& e2) {
-	return max(0, min(e1.en, e2.en) - max(e1.st, e2.st));
-}
-
-vector<int> DependencyInstance::buildInMap(WordInstance& w, int a, int b) {
-	SegInstance& sa = w.candSeg[a];
-	SegInstance& sb = w.candSeg[b];
-
-	vector<int> map;
-	map.resize(sb.size());
-
-	int pa = 0;
-	for (int pb = 0; pb < sb.size(); ++pb) {
-		while (pa < sa.size() && computeOverlap(sa.element[pa], sb.element[pb]) == 0) {
-			pa++;
-		}
-		assert(pa != sa.size());
-		map[pb] = pa;
-	}
-	//assert(pa == (int)sa.size() - 1);
-
-	return map;
-}
-
-vector<int> DependencyInstance::buildOutMap(WordInstance& w, int a, int b) {
-	SegInstance& sa = w.candSeg[a];
-	SegInstance& sb = w.candSeg[b];
-
-	vector<int> map;
-	map.resize(sa.size());
-
-	int pb = 0;
-	for (int pa = 0; pa < sa.size(); ++pa) {
-		while (pb < sb.size() && computeOverlap(sa.element[pa], sb.element[pb]) == 0) {
-			pb++;
-		}
-		assert(pb != sb.size());
-		map[pa] = pb;
-	}
-	//assert(pb == (int)sb.size() - 1);
-
-	return map;
-}
-
 void DependencyInstance::setInstIds(DependencyPipe* pipe, Options* options) {
 	Alphabet* typeAlphabet = pipe->typeAlphabet;
 	Alphabet* posAlphabet = pipe->posAlphabet;
 	Alphabet* lexAlphabet = pipe->lexAlphabet;
 	unordered_set<string>& suffixList = pipe->suffixList;
 	unordered_map<string, string>& coarseMap = pipe->coarseMap;
-
-	if (options->lang == PossibleLang::Chinese) {
-		int len = 0;
-		for (int i = 1; i < numWord; ++i) {
-			for (unsigned int j = 0; j < word[i].goldForm.size(); ++j) {
-				len += ChineseStringLength(word[i].goldForm[j]);
-			}
-		}
-		characterid.resize(len);
-		len = 0;
-		for (int i = 1; i < numWord; ++i) {
-			for (unsigned int j = 0; j < word[i].goldForm.size(); ++j) {
-				int length = ChineseStringLength(word[i].goldForm[j]);
-				for (int k = 0; k < length; ++k) {
-					characterid[len] = lexAlphabet->lookupIndex(GetChineseChar(word[i].goldForm[j], k));
-					len++;
-				}
-			}
-		}
-		assert(len == (int)characterid.size());
-
-		len = 0;
-		for (int i = 1; i < numWord; ++i) {
-			WordInstance& currWord = word[i];
-			int off = 0;
-			for (unsigned int j = 0; j < currWord.candSeg.size(); ++j) {
-				SegInstance& seg = currWord.candSeg[j];
-				off = 0;
-				for (int k = 0; k < seg.size(); ++k) {
-					SegElement& ele = seg.element[k];
-					ele.st = len + off;
-					ele.en = ele.st + ChineseStringLength(ele.form);
-					off += ChineseStringLength(ele.form);
-
-					for (int l = ele.st; l < ele.en; ++l) {
-						assert(lexAlphabet->lookupIndex(GetChineseChar(ele.form, l - ele.st)) == characterid[l]);
-					}
-				}
-			}
-			len += off;
-
-			// build in/out map
-			/*
-			if (currWord.candSeg.size() > 1) {
-				int size = currWord.candSeg.size();
-				currWord.inMap.resize(size * size);
-				currWord.outMap.resize(size * size);
-				for (int a = 0; a < size; ++a) {
-					for (int b = 0; b < size; ++b) {
-						currWord.inMap[a * size + b] = buildInMap(currWord, a, b);
-						currWord.outMap[a * size + b] = buildOutMap(currWord, a, b);
-					}
-				}
-			}
-			*/
-		}
-		assert(len == (int)characterid.size());
-	}
 
 	for (int i = 0; i < numWord; ++i) {
 		WordInstance& currWord = word[i];
@@ -400,38 +295,19 @@ void DependencyInstance::updateChildList(HeadIndex& newH, HeadIndex& oldH, HeadI
 }
 
 void DependencyInstance::output() {
-	for (unsigned int i = 0; i < characterid.size(); ++i) {
-		cout << characterid[i] << " ";
-	}
-	cout << endl;
 	for (int i = 1; i < numWord; ++i) {
 		SegInstance& segInst = word[i].getCurrSeg();
 		cout << segInst.AlIndex << " " << segInst.morphIndex << " morph: ";
 		for (unsigned int j = 0; j < segInst.morph.size(); ++j) {
 			cout << segInst.morph[j] << "_" << segInst.morphid[j] << "/";
 		}
-		vector<double> probList(word[i].candSeg.size());
-		for (unsigned int j = 0; j < word[i].candSeg.size(); ++j)
-			probList[j] = word[i].candSeg[j].prob;
-
-		double sumScore = -DBL_MAX;
-		for (unsigned int j = 0; j < probList.size(); ++j) {
-			sumScore = logsumexp(sumScore, probList[j]);
-		}
-
-		for (unsigned int j = 0; j < probList.size(); ++j) {
-			probList[j] = exp(probList[j] - sumScore);
-		}
-
-		for (unsigned int j = 0; j < word[i].candSeg.size(); ++j)
-			cout << "\t" << probList[j] << "_" << word[i].candSeg[j].prob;
 		cout << endl;
 		for (int j = 0; j < segInst.size(); ++j) {
 			SegElement& ele = segInst.element[j];
 			cout << HeadIndex(i, j) << "\t" << ele.form << "_" << ele.formid;
 			cout << "\t" << ele.lemma << "_" << ele.lemmaid;
 			cout << "\t" << ele.candPos[ele.currPosCandID] << "_" << ele.getCurrPos();
-			cout << "\t" << ele.dep << "\t" << word[i].currSegCandID << "\t" << ele.currPosCandID << "\t" << ele.st << "_" << ele.en << endl;
+			cout << "\t" << ele.dep << endl;
 		}
 	}
 	cout << endl;

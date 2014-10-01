@@ -19,6 +19,7 @@ using namespace std;
 class DependencyReader {
 public:
 	DependencyReader();
+	DependencyReader(Options* options);
 	DependencyReader(Options* options, string file);
 	virtual ~DependencyReader();
 
@@ -28,7 +29,6 @@ public:
 	inst_ptr nextInstance();
 
 	bool hasCandidate;
-	bool isTrain;
 
 private:
 	ifstream fin;

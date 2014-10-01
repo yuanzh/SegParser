@@ -57,8 +57,6 @@ public:
 
 	void closeDecoder();
 
-	void evaluatePruning();
-
 	DependencyPipe* pipe;
 	DependencyDecoder* decoder;
 	Parameters* parameters;
@@ -73,7 +71,6 @@ private:
 	double bestUlabAcc;
 	int restartIter;
 
-	void resetParams();
 };
 
 } /* namespace segparser */

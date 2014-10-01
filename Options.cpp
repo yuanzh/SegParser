@@ -29,7 +29,7 @@ Options::Options() {
 	test = false;
 	eval = false;
 
-	trainPruner = false;
+	trainPruner = true;
 
 	heuristicDep = false;
 
@@ -53,11 +53,11 @@ Options::Options() {
 	trainThread = 10;
 
 	seed = 0;
-	regC = 0.01;
+	regC = 0.001;
 
 	// feature;
-	useCS = false;			// consecutive sibling
-	useGP = false;			// grandparent
+	useCS = true;			// consecutive sibling
+	useGP = true;			// grandparent
 	useGS = false;			// grand-sibling
 	useTS = false;			// tri-sibling
 	useHB = false;			// head-bigram
@@ -68,15 +68,12 @@ Options::Options() {
 	useSP = true;			// seg/pos feature
 
 	trainConvergeIter = 50;
-	testConvergeIter = 200;
+	testConvergeIter = 100;
 	restartIter = 25;
 
 	evalPunc = true;
 	useTedEval = false;
 	jointSegPos = false;
-	earlyStop = 20;
-
-	addLoss = false;
 }
 
 Options::~Options() {
@@ -152,9 +149,6 @@ void Options::processArguments(int argc, char** argv) {
 		}
 		if (pair[0].compare("evalpunc") == 0) {
 			evalPunc = (pair[1] == "true" ? true : false);
-		}
-		if (pair[0].compare("earlystop") == 0) {
-			earlyStop = atoi(pair[1].c_str());
 		}
 	}
 
@@ -239,7 +233,6 @@ void Options::outputArg() {
 //	cout << "restart iter: " << restartIter << endl;
 	cout << "train converge iter: " << trainConvergeIter << endl;
 	cout << "test converge iter: " << testConvergeIter << endl;
-	cout << "early stop: " << earlyStop << endl;
 	cout << "tedeval: " << useTedEval << endl;
 	cout << "joint seg pos: " << jointSegPos << endl;
 	cout << "prune: " << trainPruner << endl;

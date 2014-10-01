@@ -22,7 +22,6 @@ class FeatureExtractor;
 
 class Parameters {
 public:
-	//vector<double> tmpParams;
 	vector<double> parameters;
 	vector<double> total;
 	int size;
@@ -41,7 +40,6 @@ public:
 
 	double elementError(WordInstance& gold, WordInstance& pred, int segid);
 	double wordError(WordInstance& gold, WordInstance& pred);
-	double wordDepError(WordInstance& gold, WordInstance& pred);
 private:
 	Options* options;
 

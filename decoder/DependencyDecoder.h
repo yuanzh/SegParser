@@ -49,10 +49,6 @@ public:
 		return updateTimes;
 	}
 
-	void resetUpdateTimes() {
-		updateTimes = 0;
-	}
-
 	void initInst(DependencyInstance* inst, FeatureExtractor* fe);
 	void removeGoldInfo(DependencyInstance* inst);
 
@@ -61,16 +57,11 @@ public:
 
 	double thresh;
 
-	int failTime;
-
 	int getBottomUpOrder(DependencyInstance* inst, HeadIndex& arg, vector<HeadIndex>& idx, int id);
-	double sampleSeg1O(DependencyInstance* inst, DependencyInstance* gold, FeatureExtractor* fe, int wordID, Random& r);
-	double samplePos1O(DependencyInstance* inst, DependencyInstance* gold, FeatureExtractor* fe, int wordID, Random& r);
-	bool randomWalkSampler(DependencyInstance* pred, DependencyInstance* gold, FeatureExtractor* fe, CacheTable* cache,
-			vector<bool>& toBeSampled, Random& r, double T);
+	double sampleSegPos1O(DependencyInstance* inst, DependencyInstance* gold, FeatureExtractor* fe, int wordID, Random& r);
+	void randomWalkSampler(DependencyInstance* pred, DependencyInstance* gold, FeatureExtractor* fe, CacheTable* cache,
+			vector<bool>& toBeSampled, Random& r);
 
-	double sampleTime;
-	double climbTime;
 protected:
 	int updateTimes;
 
@@ -88,10 +79,6 @@ protected:
 	void updatePos(WordInstance& word, SegElement& ele, int newPos);
 
 	void cycleErase(DependencyInstance* inst, HeadIndex i, vector<bool>& toBeSampled);
-	void updateSeg(DependencyInstance* pred, DependencyInstance* gold, HeadIndex& m,
-			int newSeg, int oldSeg, int baseOptSeg, int baseOptPos, vector<int>& oldPos, vector<HeadIndex>& oldHeadIndex,
-			vector<HeadIndex>& relatedChildren, vector<int>& relatedOldParent);
-	void setGoldSegAndPos(DependencyInstance* pred, DependencyInstance* gold);
 };
 
 } /* namespace segparser */

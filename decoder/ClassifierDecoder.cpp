@@ -64,13 +64,13 @@ void ClassifierDecoder::train(DependencyInstance* gold, DependencyInstance* pred
 
 				newFV.concatNeg(&oldFV);
 
-				double err = fe->parameters->wordDepError(gold->word[mw], pred->word[mw]);
+				double err = fe->parameters->wordError(gold->word[mw], pred->word[mw]);
 
 				if (err - (newScore - oldScore) > 1e-4) {
 					fe->parameters->update(gold, pred, &newFV, err - (newScore - oldScore), fe, updateTimes);
+					updateTimes++;
 				}
 			}
-			updateTimes++;
 		}
 	}
 }
@@ -109,7 +109,7 @@ void ClassifierDecoder::findOptHead(DependencyInstance* pred, DependencyInstance
 			double score = fe->parameters->getScore(&fv);
 			if (gold) {
 				// add loss
-				score += fe->parameters->wordDepError(gold->word[m.hWord], pred->word[m.hWord]);
+				score += fe->parameters->wordError(gold->word[m.hWord], pred->word[m.hWord]);
 			}
 
 			if (score > bestScore + 1e-6) {

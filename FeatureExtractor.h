@@ -83,7 +83,6 @@ public:
 	CacheTable* getCacheTable(DependencyInstance* s);
 
 	double getPartialDepScore(DependencyInstance* s, HeadIndex& x, CacheTable* cache);
-	double getPartialBigramDepScore(DependencyInstance* s, HeadIndex& x, HeadIndex& y, CacheTable* cache);
 	double getPartialPosScore(DependencyInstance* s, HeadIndex& x, CacheTable* cache);
 	double getScore(DependencyInstance* s);
 	double getScore(DependencyInstance* s, CacheTable* cache);

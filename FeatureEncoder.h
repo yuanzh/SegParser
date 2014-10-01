@@ -455,13 +455,12 @@ struct HighOrder {
 		L_P_nP_nnP,
 
 		POS_PROB,
-		P_POS_PROB,
 		W_POS_PROB,
 		SEG_PROB,
 		W_SEG_PROB,
 
 		SEG_P2,
-/*		SEG_P1,
+		SEG_P1,
 		SEG_U,
 		SEG_N1,
 		SEG_N2,
@@ -477,20 +476,13 @@ struct HighOrder {
 		SEG_IP2U,
 		SEG_IP1N1,
 		SEG_IUN2,
-*/
+
 		pL_P_L,
 		P_L_nL,
 		pL_P_nL,
-		P_START_C_pC,
-		P_MID_C_pC,
-		P_C_C0,
-		P_C0,
-		pP_P_pC_C,
 		P_PRE,
 		P_SUF,
 		P_LENGTH,
-
-		SEG_W,
 
 		COUNT,
 	};

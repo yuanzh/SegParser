@@ -71,11 +71,7 @@ public:
 	vector<int> candSpecialPos;
 	vector<double> candProb;
 
-	// for chinese character
-	int st;
-	int en;
-
-	SegElement() { form = ""; formid = -1; lemma = ""; lemmaid = -1; st = -1; en = -1;}
+	SegElement() { form = ""; formid = -1; lemma = ""; lemmaid = -1; }
 
 	int candPosNum() {
 		return candPos.size();
@@ -158,9 +154,6 @@ public:
 
 	int optPosCount;		// number of segs with optimal pos
 
-	vector< vector<int> > inMap;		// [a->b id][size of b], for each element of b, need a map to decide the head and POS
-	vector< vector<int> > outMap;		// [a->b id][size of a], for each child of a, need a map to decide its new parent
-
 	WordInstance() {
 		wordStr = "";
 		wordid = -1;
@@ -192,8 +185,6 @@ public:
 	vector<WordInstance> word;
 	int numWord;			// number of words
 
-	vector<int> characterid;
-
 	int optSegCount;		// number of words with optimal seg
 
 	FeatureVector fv;		// feature vector of the current tree
@@ -224,10 +215,6 @@ private:
 
 	bool isPunc(string& w);
 	bool isCoord(int lang, string& w);
-
-	int computeOverlap(SegElement& e1, SegElement& e2);
-	vector<int> buildInMap(WordInstance& w, int a, int b);
-	vector<int> buildOutMap(WordInstance& w, int a, int b);
 };
 
 typedef boost::shared_ptr<DependencyInstance> inst_ptr;
