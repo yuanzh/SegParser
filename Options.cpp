@@ -29,7 +29,7 @@ Options::Options() {
 	test = false;
 	eval = false;
 
-	trainPruner = true;
+	trainPruner = false;
 
 	heuristicDep = false;
 
@@ -56,15 +56,15 @@ Options::Options() {
 	regC = 0.01;
 
 	// feature;
-	useCS = true;			// consecutive sibling
-	useGP = true;			// grandparent
+	useCS = false;			// consecutive sibling
+	useGP = false;			// grandparent
 	useGS = false;			// grand-sibling
 	useTS = false;			// tri-sibling
 	useHB = false;			// head-bigram
 	useAS = false;			// arbitrary sibling
 	useGGPC = false;		// grand-grand-parent;
 	usePSC = false;		// sibling grand-child
-	useHO = true;			// high order and global
+	useHO = false;			// high order and global
 	useSP = true;			// seg/pos feature
 
 	trainConvergeIter = 50;
