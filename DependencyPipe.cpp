@@ -139,7 +139,7 @@ void DependencyPipe::buildDictionary(string& goldfile) {
 	buildSuffixList();
 
 	DependencyReader reader(options, goldfile);
-	reader.hasCandidate = false;
+	//reader.hasCandidate = false;
 	inst_ptr gold = reader.nextInstance();
 
 	int cnt = 0;
@@ -171,7 +171,7 @@ void DependencyPipe::createAlphabet(string& goldfile) {
 	cout.flush();
 
 	DependencyReader reader(options, goldfile);
-	reader.hasCandidate = false;
+	//reader.hasCandidate = false;
 	inst_ptr gold = reader.nextInstance();
 
 	int cnt = 0;
@@ -229,7 +229,7 @@ vector<inst_ptr> DependencyPipe::createInstances(string goldFile) {
 	cout.flush();
 
 	DependencyReader reader(options, goldFile);
-	reader.hasCandidate = false;
+	//reader.hasCandidate = false;
 
 	inst_ptr gold = reader.nextInstance();
 

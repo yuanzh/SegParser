@@ -65,7 +65,7 @@ Options::Options() {
 	useGGPC = false;		// grand-grand-parent;
 	usePSC = false;		// sibling grand-child
 	useHO = true;			// high order and global
-	useSP = true;			// seg/pos feature
+	useSP = false;			// seg/pos feature
 
 	trainConvergeIter = 50;
 	testConvergeIter = 200;
