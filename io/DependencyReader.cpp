@@ -106,10 +106,10 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 			assert(sumPosProb > 0.0);
 			for (unsigned int k = 0; k < ele.candPos.size(); ++k) {
 				ele.candProb[k] /= sumPosProb;
-				//if (ele.candProb[k] > 1e-6)
-				//	ele.candProb[k] = log(ele.candProb[k]);
-				//else
-				//	ele.candProb[k] = -1e3;
+				if (ele.candProb[k] > 1e-6)
+					ele.candProb[k] = log(ele.candProb[k]);
+				else
+					ele.candProb[k] = -1000000;
 			}
 		}
 		sumSegProb += word->candSeg[i].prob;
@@ -122,10 +122,10 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 	assert(sumSegProb > 0.0);
 	for (unsigned int i = 0; i < word->candSeg.size(); ++i) {
 		word->candSeg[i].prob /= sumSegProb;
-		//if (word->candSeg[i].prob > 1e-6)
-		//	word->candSeg[i].prob = log(word->candSeg[i].prob);
-		//else
-		//	word->candSeg[i].prob = -1e5;
+		if (word->candSeg[i].prob > 1e-6)
+			word->candSeg[i].prob = log(word->candSeg[i].prob);
+		else
+			word->candSeg[i].prob = -1000000;
 	}
 }
 
