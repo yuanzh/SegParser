@@ -244,6 +244,8 @@ void DependencyReader::addGoldSegToCand(WordInstance* word) {
 void DependencyReader::addSegCand(WordInstance* word, string str) {
 	vector<string> dataList;
 	StringSplit(str, "||", &dataList);
+	if (dataList.size() != 5)
+		cout << str << endl;
 	assert(dataList.size() == 5);
 	SegInstance segInst;
 
