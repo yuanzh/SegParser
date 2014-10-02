@@ -145,7 +145,7 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 
 void DependencyReader::addGoldSegToCand(WordInstance* word) {
 	// add the gold seg in to seg candidate if not exist (with prob 0)
-	double prob = hasCandidate ? (isTrain ? 1.0 : 0.0) : 1.0;
+	double prob = hasCandidate ? (isTrain ? 0.3 : 0.0) : 1.0;
 
 	if (options->lang == PossibleLang::Arabic) {
 		prob = hasCandidate ? 0.0 : 1.0;

@@ -326,14 +326,14 @@ void SegParser::checkDevStatus(int iter) {
 			// check non proj weight
 			uint64_t code = pipe->fe->genCodePF(HighOrder::NP, 1);
 			int index = pipe->dataAlphabet->lookupIndex(TemplateType::THighOrder, code, false);
-			assert(index > 0);
+			//assert(index > 0);
 			cout << "proj weight: " << parameters->parameters[index] << endl;
 		}
 
 		if (options->useSP) {
 			uint64_t code = pipe->fe->genCodePF(HighOrder::SEG_PROB, 0);
 			int index = pipe->dataAlphabet->lookupIndex(TemplateType::THighOrder, code, false);
-			assert(index > 0);
+			//assert(index > 0);
 			cout << "seg weight: " << parameters->parameters[index] << endl;
 			cout << "dev seg weight: " << devParams->parameters[index] << endl;
 
