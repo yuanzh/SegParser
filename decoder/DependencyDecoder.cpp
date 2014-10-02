@@ -415,8 +415,7 @@ double DependencyDecoder::samplePos1O(DependencyInstance* inst, DependencyInstan
 
 		//if (gold) {
 			for (unsigned int z = 0; z < probList.size(); ++z) {
-				//probList[z] *= 0.5;
-				probList[z] *= 0.25;
+				probList[z] *= 0.5;
 			}
 		//}
 
@@ -485,8 +484,7 @@ double DependencyDecoder::sampleSeg1O(DependencyInstance* inst, DependencyInstan
 
 	//if (gold) {
 		for (unsigned int i = 0; i < probList.size(); ++i) {
-			//probList[i] *= 0.5;
-			probList[i] *= 0.25;
+			probList[i] *= 0.5;
 		}
 	//}
 
