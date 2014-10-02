@@ -152,6 +152,9 @@ void FeatureVector::output() {
 		cout << normalIndex[i] << " ";
 	}
 	cout << endl;
+
+	int x;
+	cin >> x;
 }
 
 } /* namespace segparser */

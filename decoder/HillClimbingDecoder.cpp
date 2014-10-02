@@ -650,7 +650,7 @@ void HillClimbingDecoder::train(DependencyInstance* gold, DependencyInstance* pr
     if (oldScore + err < newScore - 1e-6) {
     	cout << oldScore + err << " " << newScore << endl;
 /*
-		long code = fe->pipe->fe->genCodePF(HighOrder::SEG_PROB, 0);
+		uint64_t code = fe->pipe->fe->genCodePF(HighOrder::SEG_PROB, 0);
 		int index = fe->pipe->dataAlphabet->lookupIndex(TemplateType::THighOrder, code, false);
 		cout << "seg weight: " << fe->parameters->parameters[index] << endl;
     	for (int i = 1; i < pred->numWord; ++i) {

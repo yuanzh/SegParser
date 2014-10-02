@@ -516,19 +516,9 @@ public:
 
 	uint64_t genCodePPF(uint64_t temp, uint64_t p1, uint64_t p2);
 
-	uint64_t genCodePP(uint64_t temp, uint64_t p1, uint64_t p2);
-
 	uint64_t genCodePPPF(uint64_t temp, uint64_t p1, uint64_t p2, uint64_t p3);;
 
-	uint64_t genCodePPP(uint64_t temp, uint64_t p1, uint64_t p2, uint64_t p3);
-
-	uint64_t genCodePPW(uint64_t temp, uint64_t p1, uint64_t p2, uint64_t w1);
-
 	uint64_t genCodePPPPF(uint64_t temp, uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4);
-
-	uint64_t genCodePPPP(uint64_t temp, uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4);
-
-	uint64_t genCodePPPW(uint64_t temp, uint64_t p1, uint64_t p2, uint64_t p3, uint64_t w1);
 
 	uint64_t genCodePPPPPF(uint64_t temp, uint64_t p1, uint64_t p2, uint64_t p3, uint64_t p4, uint64_t p5);
 
@@ -559,9 +549,6 @@ public:
 	uint64_t genCodeIIVPPF(uint64_t temp, uint64_t i1, uint64_t i2, uint64_t v1, uint64_t p1, uint64_t p2);
 
 	uint64_t genCodeIIVVPPF(uint64_t temp, uint64_t i1, uint64_t i2, uint64_t v1, uint64_t v2, uint64_t p1, uint64_t p2) ;
-
-	// more than one flag, add directly
-	uint64_t genCodePFF(uint64_t temp, uint64_t p1, uint64_t f1, uint64_t f2);
 };
 
 } /* namespace segparser */

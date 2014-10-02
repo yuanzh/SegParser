@@ -50,8 +50,8 @@ public:
 	void createHighOrderFeatureVector(DependencyInstance* inst, FeatureVector* fv);
 	void createPartialHighOrderFeatureVector(DependencyInstance* inst, HeadIndex& x, bool bigram, FeatureVector* fv);
 	void createPartialPosHighOrderFeatureVector(DependencyInstance* inst, HeadIndex& x, FeatureVector* fv);
-	void addCode(int type, long code, double val, FeatureVector* fv);
-	void addCode(int type, long code, FeatureVector* fv);
+	void addCode(int type, uint64_t code, double val, FeatureVector* fv);
+	void addCode(int type, uint64_t code, FeatureVector* fv);
 
 	FeatureAlphabet* dataAlphabet;
 

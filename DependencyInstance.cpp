@@ -400,13 +400,15 @@ void DependencyInstance::updateChildList(HeadIndex& newH, HeadIndex& oldH, HeadI
 }
 
 void DependencyInstance::output() {
-	for (unsigned int i = 0; i < characterid.size(); ++i) {
-		cout << characterid[i] << " ";
-	}
-	cout << endl;
+	//for (unsigned int i = 0; i < characterid.size(); ++i) {
+	//	cout << characterid[i] << " ";
+	//}
+	//cout << endl;
+	cout << numWord << endl;
 	for (int i = 1; i < numWord; ++i) {
 		SegInstance& segInst = word[i].getCurrSeg();
 		cout << segInst.AlIndex << " " << segInst.morphIndex << " morph: ";
+		cout.flush();
 		for (unsigned int j = 0; j < segInst.morph.size(); ++j) {
 			cout << segInst.morph[j] << "_" << segInst.morphid[j] << "/";
 		}
@@ -422,7 +424,6 @@ void DependencyInstance::output() {
 		for (unsigned int j = 0; j < probList.size(); ++j) {
 			probList[j] = exp(probList[j] - sumScore);
 		}
-
 		for (unsigned int j = 0; j < word[i].candSeg.size(); ++j)
 			cout << "\t" << probList[j] << "_" << word[i].candSeg[j].prob;
 		cout << endl;

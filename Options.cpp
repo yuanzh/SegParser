@@ -29,7 +29,7 @@ Options::Options() {
 	test = false;
 	eval = false;
 
-	trainPruner = false;
+	trainPruner = true;
 
 	heuristicDep = false;
 
@@ -56,25 +56,25 @@ Options::Options() {
 	regC = 0.01;
 
 	// feature;
-	useCS = false;			// consecutive sibling
-	useGP = false;			// grandparent
+	useCS = true;			// consecutive sibling
+	useGP = true;			// grandparent
 	useGS = false;			// grand-sibling
 	useTS = false;			// tri-sibling
 	useHB = false;			// head-bigram
 	useAS = false;			// arbitrary sibling
 	useGGPC = false;		// grand-grand-parent;
 	usePSC = false;		// sibling grand-child
-	useHO = false;			// high order and global
+	useHO = true;			// high order and global
 	useSP = true;			// seg/pos feature
 
-	trainConvergeIter = 50;
+	trainConvergeIter = 200;
 	testConvergeIter = 200;
 	restartIter = 25;
 
 	evalPunc = true;
 	useTedEval = false;
 	jointSegPos = false;
-	earlyStop = 20;
+	earlyStop = 40;
 
 	addLoss = false;
 }

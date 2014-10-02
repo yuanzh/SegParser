@@ -145,7 +145,7 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 
 void DependencyReader::addGoldSegToCand(WordInstance* word) {
 	// add the gold seg in to seg candidate if not exist (with prob 0)
-	double prob = hasCandidate ? (isTrain ? 0.3 : 0.0) : 1.0;
+	double prob = hasCandidate ? (isTrain ? 1.0 : 0.0) : 1.0;
 
 	if (options->lang == PossibleLang::Arabic) {
 		prob = hasCandidate ? 0.0 : 1.0;
@@ -196,10 +196,14 @@ void DependencyReader::addGoldSegToCand(WordInstance* word) {
 		// old cand, check pos
 		SegInstance& segInst = word->candSeg[goldSegID];
 		word->currSegCandID = goldSegID;
+		segInst.morph = word->goldMorph;
+		segInst.morphIndex = word->goldMorphIndex;
+		segInst.AlIndex = word->goldAlIndex;
 
 		assert(word->goldForm.size() == segInst.element.size());
 		for (unsigned int i = 0; i < word->goldForm.size(); ++i) {
 			assert(word->goldForm[i].compare(segInst.element[i].form) == 0);
+			segInst.element[i].lemma = word->goldLemma[i];
 			string goldPos = word->goldPos[i];
 			unsigned int goldPosID = 0;
 			SegElement& ele = segInst.element[i];

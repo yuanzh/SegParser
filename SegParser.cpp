@@ -324,14 +324,14 @@ void SegParser::checkDevStatus(int iter) {
 
 		if (options->useHO){
 			// check non proj weight
-			long code = pipe->fe->genCodePF(HighOrder::NP, 1);
+			uint64_t code = pipe->fe->genCodePF(HighOrder::NP, 1);
 			int index = pipe->dataAlphabet->lookupIndex(TemplateType::THighOrder, code, false);
 			assert(index > 0);
 			cout << "proj weight: " << parameters->parameters[index] << endl;
 		}
 
 		if (options->useSP) {
-			long code = pipe->fe->genCodePF(HighOrder::SEG_PROB, 0);
+			uint64_t code = pipe->fe->genCodePF(HighOrder::SEG_PROB, 0);
 			int index = pipe->dataAlphabet->lookupIndex(TemplateType::THighOrder, code, false);
 			assert(index > 0);
 			cout << "seg weight: " << parameters->parameters[index] << endl;
@@ -410,7 +410,7 @@ void SegParser::loadModel(string file) {
 	parameters->size = parameters->parameters.size();
 
 	if (options->useSP) {
-		long code = pipe->fe->genCodePF(HighOrder::SEG_PROB, 0);
+		uint64_t code = pipe->fe->genCodePF(HighOrder::SEG_PROB, 0);
 		int index = pipe->dataAlphabet->lookupIndex(TemplateType::THighOrder, code, false);
 		cout << "seg weight: " << parameters->parameters[index] << endl;
 
@@ -522,19 +522,19 @@ int main(int argc, char** argv) {
 
 			prunerPipe.loadCoarseMap(prunerOptions.trainFile);
 
-			//vector<inst_ptr> trainingData = prunerPipe.createInstances(prunerOptions.trainFile);
+			vector<inst_ptr> trainingData = prunerPipe.createInstances(prunerOptions.trainFile);
 
 			pruner = new SegParser(&prunerPipe, &prunerOptions);
 			pruner->pruner = NULL;
-
+/*
 			pruner->loadModel(options.modelName + ".pruner");
 
 			int numFeats = prunerPipe.dataAlphabet->size() - 1;
 			int numTypes = prunerPipe.typeAlphabet->size() - 1;
 			cout << "Pruner Num Feats: " << numFeats << endl;
 			cout << "Pruner Num Edge Labels: " << numTypes << endl;
+*/
 
-/*
 			int numFeats = prunerPipe.dataAlphabet->size() - 1;
 			int numTypes = prunerPipe.typeAlphabet->size() - 1;
 			cout << "Pruner Num Feats: " << numFeats << endl;
@@ -542,7 +542,7 @@ int main(int argc, char** argv) {
 
 			pruner->train(trainingData);
 			pruner->closeDecoder();
-*/
+
 			pruner->evaluatePruning();
 		}
 
