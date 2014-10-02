@@ -360,26 +360,7 @@ vector<inst_ptr> DependencyPipe::createInstances(string goldFile) {
 
 	reader.close();
 
-	vector<inst_ptr> ret;
-	ret.resize(trainData.size());
-	vector<bool> used;
-	used.resize(trainData.size());
-	Random r(0);
-	int id = 0;
-	for (unsigned int i = 0; i < trainData.size(); ++i) {
-		id = (id + r.nextInt(trainData.size())) % trainData.size();
-		while (used[id]) {
-			id = (id + 1) % trainData.size();
-		}
-		ret[i] = trainData[id];
-		used[id] = true;
-	}
-	for (unsigned int i = 0; i < trainData.size(); ++i) {
-		assert(used[i]);
-	}
-
 	return trainData;
-	//return ret;
 }
 
 int DependencyPipe::findRightNearestChildID(vector<HeadIndex>& child, HeadIndex id) {
@@ -904,7 +885,7 @@ void DependencyPipe::createArcFeatureVector(DependencyInstance* inst,
 		}
 
 	}
-/*
+
 	// contextual
 	int pHW = headSegIndex > 0 ? inst->getElement(inst->segToWord(headSegIndex - 1)).formid: ConstPosLex::START;
 	pHW = headSegIndex == modSegIndex + 1 ? ConstPosLex::MID : pLP;
@@ -934,7 +915,7 @@ void DependencyPipe::createArcFeatureVector(DependencyInstance* inst,
 
 	code = fe->genCodeWF(Arc::nMW, nMW);
 	addCode(TemplateType::TArc, code | distFlag, fv);
-*/
+
 
 	int flagVerb = 0x1;
 	int flagCoord = 0x2;
@@ -1555,8 +1536,8 @@ void DependencyPipe::createPos1OFeatureVector(DependencyInstance* inst, HeadInde
 	code = fe->genCodePF(HighOrder::POS_PROB, 1);
 	addCode(TemplateType::THighOrder, code, ele.candProb[ele.currPosCandID], fv);
 
-	code = fe->genCodePF(HighOrder::P_POS_PROB, P);
-	addCode(TemplateType::THighOrder, code, ele.candProb[ele.currPosCandID], fv);
+	//code = fe->genCodePF(HighOrder::P_POS_PROB, P);
+	//addCode(TemplateType::THighOrder, code, ele.candProb[ele.currPosCandID], fv);
 
 	code = fe->genCodeWF(HighOrder::W_POS_PROB, L);
 	addCode(TemplateType::THighOrder, code, ele.candProb[ele.currPosCandID], fv);
@@ -1628,11 +1609,11 @@ void DependencyPipe::createPosHOFeatureVector(DependencyInstance* inst, HeadInde
 	code = fe->genCodePWF(HighOrder::P_nnL, P, nnL);
 	addCode(TemplateType::THighOrder, code, fv);
 
-	code = fe->genCodePWWF(HighOrder::pL_P_L, P, pL, L);
-	addCode(TemplateType::THighOrder, code, fv);
+	//code = fe->genCodePWWF(HighOrder::pL_P_L, P, pL, L);
+	//addCode(TemplateType::THighOrder, code, fv);
 
-	code = fe->genCodePWWF(HighOrder::P_L_nL, P, L, nL);
-	addCode(TemplateType::THighOrder, code, fv);
+	//code = fe->genCodePWWF(HighOrder::P_L_nL, P, L, nL);
+	//addCode(TemplateType::THighOrder, code, fv);
 
 	if (options->lang == PossibleLang::Chinese) {
 
@@ -1739,19 +1720,19 @@ void DependencyPipe::createSegFeatureVector(DependencyInstance* inst, int wordid
 		}
 	}
 
-	//code = fe->genCodeWF(HighOrder::W_SEG_PROB, inst->word[wordid].wordid);
-	//addCode(TemplateType::THighOrder, code, segInst.prob, fv);
+	code = fe->genCodeWF(HighOrder::W_SEG_PROB, inst->word[wordid].wordid);
+	addCode(TemplateType::THighOrder, code, segInst.prob, fv);
 
-	if (wordid > 0) {
-		for (int i = 0; i < segInst.size(); ++i) {
-			code = fe->genCodeWF(HighOrder::SEG_W, segInst.element[i].lemmaid);
-			addCode(TemplateType::THighOrder, code, fv);
-		}
+	//if (wordid > 0) {
+	//	for (int i = 0; i < segInst.size(); ++i) {
+	//		code = fe->genCodeWF(HighOrder::SEG_W, segInst.element[i].lemmaid);
+	//		addCode(TemplateType::THighOrder, code, fv);
+	//	}
 		//for (int i = 0; i < segInst.size() - 1; ++i) {
 		//	code = fe->genCodeWWF(HighOrder::SEG_P2, inst->characterid[segInst.element[i].en - 1], inst->characterid[segInst.element[i + 1].st]);
 		//	addCode(TemplateType::THighOrder, code, fv);
 		//}
-	}
+	//}
 
 
 /*
