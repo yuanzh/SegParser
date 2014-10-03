@@ -98,8 +98,18 @@ void* decodeThreadFunc(void* instance) {
 		inst->currProcessID++;
 		pred = reader.nextInstance();
 
+		pthread_mutex_unlock(&inst->processMutex);
+
 		DependencyInstance gold;
 		assert(&gold != pred.get());
+
+		if (inst->currProcessID > inst->options->testSentences || !pred) {
+			pthread_mutex_lock( &inst->finishMutex );
+			inst->finishThreadNum++;
+			pthread_mutex_unlock( &inst->finishMutex );
+
+			break;
+		}
 
 		if (pred) {
 			pred->setInstIds(inst->sp->pipe, inst->options);
@@ -109,15 +119,6 @@ void* decodeThreadFunc(void* instance) {
 			decoder->initInst(pred.get(), fe.get());	// remove gold info and init trees
 		}
 
-		pthread_mutex_unlock(&inst->processMutex);
-
-		if (inst->currProcessID > inst->options->testSentences || !pred) {
-			pthread_mutex_lock( &inst->finishMutex );
-			inst->finishThreadNum++;
-			pthread_mutex_unlock( &inst->finishMutex );
-
-			break;
-		}
 
 		if (inst->verbal) {
 			cout << currProcessID << " ";

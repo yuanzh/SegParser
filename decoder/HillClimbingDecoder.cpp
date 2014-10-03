@@ -388,6 +388,260 @@ void* hillClimbingThreadFunc(void* instance) {
 	return NULL;
 }
 
+
+void* hillClimbingThreadFuncbak(void* instance) {
+	HillClimbingDecoder* data = (HillClimbingDecoder*)instance;
+
+	pthread_t selfThread = pthread_self();
+	int selfid = -1;
+	for (int i = 0; i < data->thread; ++i)
+		if (selfThread == data->threadID[i]) {
+			selfid = i;
+			break;
+		}
+	assert(selfid != -1);
+
+	data->debug("pending.", selfid);
+	bool jobsDone = false;
+
+	while (true) {
+		pthread_mutex_lock(&data->taskMutex[selfid]);
+
+		while (data->taskDone[selfid]) {
+			 pthread_cond_wait(&data->taskStartCond[selfid], &data->taskMutex[selfid]);
+		}
+
+		if (data->threadExit[selfid]) {
+			// jobs done
+			data->taskDone[selfid] = true;
+			jobsDone = true;
+		}
+
+		pthread_mutex_unlock(&data->taskMutex[selfid]);
+
+		if (jobsDone) {
+			break;
+		}
+
+		DependencyInstance pred = *data->pred;			// copy the instance
+		DependencyInstance* gold = data->gold;
+		FeatureExtractor* fe = data->fe;				// shared fe
+
+		Random r(data->options->seed + 2 + selfid);		// set different seed for different thread
+
+		double goldScore = -DBL_MAX;
+		if (gold) {
+			goldScore = fe->parameters->getScore(&gold->fv);
+		}
+
+		int maxIter = 1000;
+
+		//if (selfid == 0)
+		//	cout << "start sampling" << endl;
+
+		// begin sampling
+		bool done = false;
+		int iter = 0;
+		double T = 0.5;
+		for (iter = 0; iter < maxIter && !done; ++iter) {
+
+			// sample seg/pos
+			if (data->sampleSeg) {
+				assert(pred.word[0].currSegCandID == 0);
+				for (int i = 1; i < pred.numWord; ++i) {
+					data->sampleSeg1O(&pred, gold, fe, i, r);
+				}
+				pred.constructConversionList();
+			}
+
+			if (data->samplePos) {
+				for (int i = 1; i < pred.numWord; ++i) {
+					data->samplePos1O(&pred, gold, fe, i, r);
+				}
+			}
+
+			CacheTable* cache = fe->getCacheTable(&pred);
+			boost::shared_ptr<CacheTable> tmpCache = boost::shared_ptr<CacheTable>(new CacheTable());
+			if (!cache) {
+				cache = tmpCache.get();		// temporary cache for this run
+				tmpCache->initCacheTable(fe->type, &pred, fe->pfe.get(), data->options);
+			}
+
+			// sample a new tree from first order
+			int len = pred.getNumSeg();
+			vector<bool> toBeSampled(len);
+			int id = 1;		// skip root
+			for (int i = 1; i < pred.numWord; ++i) {
+				SegInstance& segInst = pred.word[i].getCurrSeg();
+
+				for (int j = 0; j < segInst.size(); ++j) {
+					if (data->options->heuristicDep) {
+						if (j == segInst.inNode)
+							toBeSampled[id] = true;
+						else
+							toBeSampled[id] = false;
+					}
+					else {
+						toBeSampled[id] = true;
+					}
+					id++;
+				}
+			}
+			assert(id == len);
+
+			Timer ts;
+			bool ok = data->randomWalkSampler(&pred, gold, fe, cache, toBeSampled, r, T);
+			if (!ok) {
+				T *= 0.5;
+				continue;
+			}
+			if (selfid == 0)
+				data->sampleTime += ts.stop();
+
+			pred.buildChild();
+			Timer tc;
+
+			// improve tree by hill climbing
+			// improve pos
+			{
+   	      		vector<HeadIndex> idx(len);
+   	      		HeadIndex root(0, 0);
+   	     		int id = data->getBottomUpOrder(&pred, root, idx, idx.size() - 1);
+   	     		assert(id == 0);
+
+   	     		for (unsigned int y = 1; y < idx.size(); ++y) {
+   	     			HeadIndex& m = idx[y];
+   	     			bool posChanged = data->findOptPos(&pred, gold, m, fe, cache);
+   	     			if (posChanged) {
+   	     				// update cache table
+   	     				cache = fe->getCacheTable(&pred);
+   	     			}
+  	     		}
+
+   	     		if (fe->pfe) {
+   	     			// has pruner, need to sample the tree again
+					if (!cache) {
+						tmpCache = boost::shared_ptr<CacheTable>(new CacheTable());
+						cache = tmpCache.get();		// temporary cache for this run
+						tmpCache->initCacheTable(fe->type, &pred, fe->pfe.get(), data->options);
+					}
+
+					id = 1;		// skip root
+					for (int i = 1; i < pred.numWord; ++i) {
+						SegInstance& segInst = pred.word[i].getCurrSeg();
+
+						for (int j = 0; j < segInst.size(); ++j) {
+							if (toBeSampled[id]) {
+								segInst.element[j].dep.setIndex(-1, 0);
+							}
+							id++;
+						}
+					}
+
+					bool ok = data->randomWalkSampler(&pred, gold, fe, cache, toBeSampled, r, T);
+					if (!ok) {
+						T *= 0.5;
+						continue;
+					}
+
+   	     			pred.buildChild();
+  	     		}
+			}
+
+			if (!cache) {
+				tmpCache = boost::shared_ptr<CacheTable>(new CacheTable());
+				cache = tmpCache.get();		// temporary cache for this run
+				tmpCache->initCacheTable(fe->type, &pred, fe->pfe.get(), data->options);
+			}
+
+			bool change = true;
+			int loop = 0;
+			//if (selfid == 0)
+			//	data->debug("aaa: ", selfid);
+			while (change && loop < 100) {
+				change = false;
+				loop++;		// avoid dead loop
+
+   	      		vector<HeadIndex> idx(len);
+   	      		HeadIndex root(0, 0);
+   	     		int id = data->getBottomUpOrder(&pred, root, idx, idx.size() - 1);
+   	     		assert(id == 0);
+
+   	     		for (unsigned int y = 1; y < idx.size(); ++y) {
+   	     			HeadIndex& m = idx[y];
+
+   	     			// find optimum pos
+   	     			//bool posChanged = data->findOptPos(&pred, gold, m, fe, cache);
+   	     			//if (posChanged) {
+   	     				// update cache table
+   	     			//	cache = fe->getCacheTable(&pred);
+   	     			//}
+   	     			//change = change || posChanged;
+
+   	     			// find the optimum head (cost augmented)
+   	     			//HeadIndex o = pred.getElement(m).dep;
+   	     			bool depChanged = data->findOptHead(&pred, gold, m, fe, cache);
+   	     			//if (c && selfid == 0) {
+   	     			//	cout << m << " " << o << " " << pred.getElement(m).dep << endl;
+   	     			//}
+   	     			change = change || depChanged;
+				}
+			}
+			if (selfid == 0)
+				data->climbTime += tc.stop();
+
+			// update best solution
+			double currScore = fe->getScore(&pred);
+			if (gold) {
+				for (int i = 1; i < pred.numWord; ++i)
+					currScore += fe->parameters->wordError(gold->word[i], pred.word[i]);
+			}
+
+			//double tmps = 0.0;
+
+			pthread_mutex_lock(&data->updateMutex);
+
+			if (data->unChangeIter >= data->convergeIter)
+				done = true;
+			else if (gold && data->unChangeIter >= data->earlyStopIter && data->bestScore > goldScore - 1e-6) {
+				done = true;
+			}
+
+			if (currScore > data->bestScore + 1e-6) {
+				data->bestScore = currScore;
+				data->best.copyInfoFromInst(&pred);
+				if (!done) {
+					if (gold && data->unChangeIter >= data->earlyStopIter && data->bestScore > goldScore - 1e-6) {
+						//done = true;
+						cout << " (" << data->unChangeIter << ") ";
+					}
+					data->unChangeIter = 0;
+				}
+			}
+			else {
+				data->unChangeIter++;
+			}
+			//tmps = data->bestScore;
+
+			pthread_mutex_unlock(&data->updateMutex);
+		}
+
+		//if (selfid == 0)
+		//	cout << "finish sampling. iter: " << iter << endl;
+
+		pthread_mutex_lock(&data->taskMutex[selfid]);
+
+		data->taskDone[selfid] = true;
+		pthread_cond_signal(&data->taskDoneCond[selfid]);
+
+		pthread_mutex_unlock(&data->taskMutex[selfid]);
+
+	}
+
+	pthread_exit(NULL);
+	return NULL;
+}
+
 HillClimbingDecoder::HillClimbingDecoder(Options* options, int thread, int convergeIter) : DependencyDecoder(options), thread(thread), convergeIter(convergeIter) {
 	cout << "converge iter: " << convergeIter << endl;
 	earlyStopIter = options->earlyStop;
