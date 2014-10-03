@@ -1552,14 +1552,14 @@ void DependencyPipe::createPos1OFeatureVector(DependencyInstance* inst, HeadInde
 	code = fe->genCodePWF(HighOrder::L_P, P, L);
 	addCode(TemplateType::THighOrder, code, fv);
 
-	code = fe->genCodePF(HighOrder::POS_PROB, 1);
-	addCode(TemplateType::THighOrder, code, ele.candProb[ele.currPosCandID], fv);
+	//code = fe->genCodePF(HighOrder::POS_PROB, 1);
+	//addCode(TemplateType::THighOrder, code, ele.candProb[ele.currPosCandID], fv);
 
-	code = fe->genCodePF(HighOrder::P_POS_PROB, P);
-	addCode(TemplateType::THighOrder, code, ele.candProb[ele.currPosCandID], fv);
+	//code = fe->genCodePF(HighOrder::P_POS_PROB, P);
+	//addCode(TemplateType::THighOrder, code, ele.candProb[ele.currPosCandID], fv);
 
-	code = fe->genCodeWF(HighOrder::W_POS_PROB, L);
-	addCode(TemplateType::THighOrder, code, ele.candProb[ele.currPosCandID], fv);
+	//code = fe->genCodeWF(HighOrder::W_POS_PROB, L);
+	//addCode(TemplateType::THighOrder, code, ele.candProb[ele.currPosCandID], fv);
 
 	if (options->lang == PossibleLang::Chinese) {
 
@@ -1728,8 +1728,8 @@ void DependencyPipe::createSegFeatureVector(DependencyInstance* inst, int wordid
 	uint64_t code = 0;
 	SegInstance& segInst = inst->word[wordid].getCurrSeg();
 
-	code = fe->genCodePF(HighOrder::SEG_PROB, 0);
-	addCode(TemplateType::THighOrder, code, segInst.prob, fv);
+	//code = fe->genCodePF(HighOrder::SEG_PROB, 0);
+	//addCode(TemplateType::THighOrder, code, segInst.prob, fv);
 
 	if (options->lang == PossibleLang::Chinese && wordid > 0) {
 		int len = min(5, segInst.element[segInst.size() - 1].en - segInst.element[0].st);

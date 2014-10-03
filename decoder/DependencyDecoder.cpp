@@ -388,7 +388,7 @@ double DependencyDecoder::samplePos1O(DependencyInstance* inst, DependencyInstan
 
 		for (int j = 0; j < ele.candPosNum(); ++j) {
 			ele.currPosCandID = j;
-
+/*
 			probList[j] = fe->getPos1OScore(inst, m);
 			//probList[j] = ele.candProb[j];
 			FeatureVector tmpfv;
@@ -406,11 +406,11 @@ double DependencyDecoder::samplePos1O(DependencyInstance* inst, DependencyInstan
 				}
 				probList[j] += loss;
 			}
-
-			//if (ele.candProb[j] < -15.0)
-			//	probList[j] = -20.0;
-			//else
-			//probList[j] = 0.0;
+*/
+			if (ele.candProb[j] < -100.0)
+				probList[j] = -100.0;
+			else
+			probList[j] = 0.0;
 		}
 
 		//if (gold) {
@@ -462,6 +462,7 @@ double DependencyDecoder::sampleSeg1O(DependencyInstance* inst, DependencyInstan
 	int oldSegID = word.currSegCandID;
 	// sample seg first
 	for (unsigned int i = 0; i < word.candSeg.size(); ++i) {
+		/*
 		word.currSegCandID = i;
 
 		probList[i] = fe->getSegScore(inst, wordID);
@@ -474,11 +475,12 @@ double DependencyDecoder::sampleSeg1O(DependencyInstance* inst, DependencyInstan
 					//1.0 : 0.0;
 			probList[i] += loss;
 		}
+		*/
 
-		//if (word.candSeg[i].prob < -15.0)
-		//	probList[i] = -20.0;
-		//else
-		//probList[i] = 0.0;
+		if (word.candSeg[i].prob < -100.0)
+			probList[i] = -100.0;
+		else
+		probList[i] = 0.0;
 	}
 	word.currSegCandID = oldSegID;
 
