@@ -131,7 +131,7 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 
 void DependencyReader::addGoldSegToCand(WordInstance* word) {
 	// add the gold seg in to seg candidate if not exist (with prob 0)
-	double prob = hasCandidate ? 0.0 : 1.0;
+	double prob = hasCandidate ? (isTrain ? 0.01 : 0.0) : 1.0;
 
 	string goldSegStr = word->goldForm[0];
 	for (unsigned int i = 1; i < word->goldForm.size(); ++i)

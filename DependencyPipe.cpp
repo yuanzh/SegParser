@@ -241,7 +241,7 @@ void DependencyPipe::buildDictionaryWithOOV(string& goldfile) {
 	lexAlphabet->lookupIndex(")");
 
 	for (unordered_map<string, int>::iterator iter = wordCount.begin(); iter != wordCount.end(); ++iter) {
-		if (iter->second >= 2) {
+		if (iter->second >= 30) {
 			lexAlphabet->lookupIndex(iter->first);
 		}
 	}
@@ -257,8 +257,8 @@ void DependencyPipe::buildDictionaryWithOOV(string& goldfile) {
 
 void DependencyPipe::createAlphabet(string& goldfile) {
 
-	buildDictionary(goldfile);
-	//buildDictionaryWithOOV(goldfile);
+	//buildDictionary(goldfile);
+	buildDictionaryWithOOV(goldfile);
 
 	cout << "Creating Alphabet ... ";
 	cout.flush();
@@ -885,7 +885,7 @@ void DependencyPipe::createArcFeatureVector(DependencyInstance* inst,
 		}
 
 	}
-
+/*
 	// contextual
 	int pHW = headSegIndex > 0 ? inst->getElement(inst->segToWord(headSegIndex - 1)).formid: ConstPosLex::START;
 	pHW = headSegIndex == modSegIndex + 1 ? ConstPosLex::MID : pLP;
@@ -915,7 +915,7 @@ void DependencyPipe::createArcFeatureVector(DependencyInstance* inst,
 
 	code = fe->genCodeWF(Arc::nMW, nMW);
 	addCode(TemplateType::TArc, code | distFlag, fv);
-
+*/
 
 	int flagVerb = 0x1;
 	int flagCoord = 0x2;

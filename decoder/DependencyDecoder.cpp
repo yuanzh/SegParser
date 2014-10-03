@@ -470,7 +470,7 @@ double DependencyDecoder::sampleSeg1O(DependencyInstance* inst, DependencyInstan
 		if (gold) {
 			SegInstance& goldInst = gold->word[wordID].getCurrSeg();
 			double loss = ((int)i != gold->word[wordID].currSegCandID) ?
-					1.0 * (word.getCurrSeg().size() + goldInst.size()) : 0.0; // consistent with parameter::wordError
+					0.5 * (word.getCurrSeg().size() + goldInst.size()) : 0.0; // consistent with parameter::wordError
 					//1.0 : 0.0;
 			probList[i] += loss;
 		}
