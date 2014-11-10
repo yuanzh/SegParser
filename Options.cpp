@@ -56,8 +56,8 @@ Options::Options() {
 	regC = 0.001;
 
 	// feature;
-	useCS = true;			// consecutive sibling
-	useGP = true;			// grandparent
+	useCS = false;			// consecutive sibling
+	useGP = false;			// grandparent
 	useGS = false;			// grand-sibling
 	useTS = false;			// tri-sibling
 	useHB = false;			// head-bigram

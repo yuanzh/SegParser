@@ -37,18 +37,23 @@ void DependencyPipe::loadCoarseMap(string& file) {
 	int p = file.find("/data/");
 	string path = file.substr(0, file.find("/", p + 1));
 
-	string mapFile = path + string("/lab/") + PossibleLang::langString[options->lang] + string(".uni.map");
-	ifstream fin(mapFile.c_str());
-	string str;
-	while (!fin.eof()) {
-		getline(fin, str);
-		if (str.empty())
-			continue;
-		vector<string> data;
-		StringSplit(str, "\t", &data);
-		coarseMap[data[0]] = data[1];
+	if (options->lang != PossibleLang::Count) {
+		string mapFile = path + string("/lab/") + PossibleLang::langString[options->lang] + string(".uni.map");
+		ifstream fin(mapFile.c_str());
+		string str;
+		while (!fin.eof()) {
+			getline(fin, str);
+			if (str.empty())
+				continue;
+			vector<string> data;
+			StringSplit(str, "\t", &data);
+			coarseMap[data[0]] = data[1];
+		}
+		fin.close();
 	}
-	fin.close();
+	else {
+		cout << "Unknown lang. No universal map." << endl;
+	}
 }
 
 void DependencyPipe::setAndCheckOffset() {
@@ -241,7 +246,7 @@ void DependencyPipe::buildDictionaryWithOOV(string& goldfile) {
 	lexAlphabet->lookupIndex(")");
 
 	for (unordered_map<string, int>::iterator iter = wordCount.begin(); iter != wordCount.end(); ++iter) {
-		if (iter->second >= 30) {
+		if (iter->second >= 3) {
 			lexAlphabet->lookupIndex(iter->first);
 		}
 	}
@@ -257,8 +262,8 @@ void DependencyPipe::buildDictionaryWithOOV(string& goldfile) {
 
 void DependencyPipe::createAlphabet(string& goldfile) {
 
-	//buildDictionary(goldfile);
-	buildDictionaryWithOOV(goldfile);
+	buildDictionary(goldfile);
+	//buildDictionaryWithOOV(goldfile);
 
 	cout << "Creating Alphabet ... ";
 	cout.flush();
@@ -733,6 +738,72 @@ void DependencyPipe::createArcFeatureVector(DependencyInstance* inst,
 		addCode(TemplateType::TArc, code, fv);
 		addCode(TemplateType::TArc, code | distFlag, fv);
 
+		if (options->lang == PossibleLang::Count) {
+			// morphology
+			SegInstance& headSegInst = inst->word[headIndex.hWord].getCurrSeg();
+			SegInstance& modSegInst = inst->word[modIndex.hWord].getCurrSeg();
+			if (headSegInst.morphIndex == headIndex.hSeg
+					&& modSegInst.morphIndex == modIndex.hSeg) {
+				assert(headSegInst.morphid.size() > 0 && modSegInst.morphid.size() > 0);
+
+				for (unsigned int fh = 0; fh < headSegInst.morphid.size(); ++fh) {
+					for (unsigned int fc = 0; fc < modSegInst.morphid.size(); ++fc) {
+						int IDH = fh;
+						int IDM = fc;
+						int HV = headSegInst.morphid[fh];
+						int MV = modSegInst.morphid[fc];
+
+						code = fe->genCodeIIVF(Arc::FF_IDH_IDM_HV, IDH, IDM, HV);
+						addCode(TemplateType::TArc, code, fv);
+						addCode(TemplateType::TArc, code | distFlag, fv);
+
+						code = fe->genCodeIIVF(Arc::FF_IDH_IDM_MV, IDH, IDM, MV);
+						addCode(TemplateType::TArc, code, fv);
+						addCode(TemplateType::TArc, code | distFlag, fv);
+
+						code = fe->genCodeIIVPF(Arc::FF_IDH_IDM_HP_MV, IDH, IDM, MV, HP);
+						addCode(TemplateType::TArc, code, fv);
+						addCode(TemplateType::TArc, code | distFlag, fv);
+
+						code = fe->genCodeIIVPF(Arc::FF_IDH_IDM_HV_MP, IDH, IDM, HV, MP);
+						addCode(TemplateType::TArc, code, fv);
+						addCode(TemplateType::TArc, code | distFlag, fv);
+
+						code = fe->genCodeIIVVF(Arc::FF_IDH_IDM_HV_MV, IDH, IDM, HV, MV);
+						addCode(TemplateType::TArc, code, fv);
+						addCode(TemplateType::TArc, code | distFlag, fv);
+
+						code = fe->genCodeIIVPF(Arc::FF_IDH_IDM_HV_HP, IDH, IDM, HV, HP);
+						addCode(TemplateType::TArc, code, fv);
+						addCode(TemplateType::TArc, code | distFlag, fv);
+
+						code = fe->genCodeIIVPF(Arc::FF_IDH_IDM_MV_MP, IDH, IDM, MV, MP);
+						addCode(TemplateType::TArc, code, fv);
+						addCode(TemplateType::TArc, code | distFlag, fv);
+
+						code = fe->genCodeIIVPPF(Arc::FF_IDH_IDM_HP_MP_MV, IDH, IDM, MV, HP, MP);
+						addCode(TemplateType::TArc, code, fv);
+						addCode(TemplateType::TArc, code | distFlag, fv);
+
+						code = fe->genCodeIIVPPF(Arc::FF_IDH_IDM_HP_HV_MP, IDH, IDM, HV, HP, MP);
+						addCode(TemplateType::TArc, code, fv);
+						addCode(TemplateType::TArc, code | distFlag, fv);
+
+						code = fe->genCodeIIVVPF(Arc::FF_IDH_IDM_HV_MP_MV, IDH, IDM, HV, MV, MP);
+						addCode(TemplateType::TArc, code, fv);
+						addCode(TemplateType::TArc, code | distFlag, fv);
+
+						code = fe->genCodeIIVVPF(Arc::FF_IDH_IDM_HP_HV_MV, IDH, IDM, HV, MV, HP);
+						addCode(TemplateType::TArc, code, fv);
+						addCode(TemplateType::TArc, code | distFlag, fv);
+
+						code = fe->genCodeIIVVPPF(Arc::FF_IDH_IDM_HP_HV_MP_MV, IDH, IDM, HV, MV, HP, MP);
+						addCode(TemplateType::TArc, code, fv);
+						addCode(TemplateType::TArc, code | distFlag, fv);
+					}
+				}
+			}
+		}
 
 		if (options->lang == PossibleLang::SPMRL) {
 			// morphology
@@ -1720,19 +1791,19 @@ void DependencyPipe::createSegFeatureVector(DependencyInstance* inst, int wordid
 		}
 	}
 
-	code = fe->genCodeWF(HighOrder::W_SEG_PROB, inst->word[wordid].wordid);
-	addCode(TemplateType::THighOrder, code, segInst.prob, fv);
+	//code = fe->genCodeWF(HighOrder::W_SEG_PROB, inst->word[wordid].wordid);
+	//addCode(TemplateType::THighOrder, code, segInst.prob, fv);
 
-	//if (wordid > 0) {
-	//	for (int i = 0; i < segInst.size(); ++i) {
-	//		code = fe->genCodeWF(HighOrder::SEG_W, segInst.element[i].lemmaid);
-	//		addCode(TemplateType::THighOrder, code, fv);
-	//	}
+	if (wordid > 0) {
+		for (int i = 0; i < segInst.size(); ++i) {
+			code = fe->genCodeWF(HighOrder::SEG_W, segInst.element[i].lemmaid);
+			addCode(TemplateType::THighOrder, code, fv);
+		}
 		//for (int i = 0; i < segInst.size() - 1; ++i) {
 		//	code = fe->genCodeWWF(HighOrder::SEG_P2, inst->characterid[segInst.element[i].en - 1], inst->characterid[segInst.element[i + 1].st]);
 		//	addCode(TemplateType::THighOrder, code, fv);
 		//}
-	//}
+	}
 
 
 /*

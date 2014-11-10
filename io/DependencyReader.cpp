@@ -69,16 +69,17 @@ void DependencyReader::addGoldSegElement(WordInstance* word, string form, string
 		}
 
 		if (word->goldMorphIndex == -1) {
-			assert(data.size() == 4);
+			//assert(data.size() == 4);
 			bool hasMorphInfo = false;
-			for (int i = 1; i < 4; ++i) {
+			//for (int i = 1; i < 4; ++i) {
+			for (unsigned int i = 0; i < data.size(); ++i) {
 				string val = data[i].substr(data[i].find_last_of("=") + 1, string::npos);
 				if (val != "na" && val != "NA")
 					hasMorphInfo = true;
 			}
 			if (hasMorphInfo) {
 				word->goldMorph.clear();
-				for (int i = 1; i < 4; ++i) {
+				for (unsigned int i = 1; i < data.size(); ++i) {
 					string val = data[i].substr(data[i].find_last_of("=") + 1, string::npos);
 					word->goldMorph.push_back(val);
 				}
@@ -106,9 +107,9 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 			assert(sumPosProb > 0.0);
 			for (unsigned int k = 0; k < ele.candPos.size(); ++k) {
 				ele.candProb[k] /= sumPosProb;
-				if (ele.candProb[k] < 1e-6)
-				//	ele.candProb[k] = log(ele.candProb[k]);
-				//else
+				if (ele.candProb[k] > 1e-6)
+					ele.candProb[k] = log(ele.candProb[k]);
+				else
 					ele.candProb[k] = -1000000;
 			}
 		}
@@ -122,16 +123,16 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 	assert(sumSegProb > 0.0);
 	for (unsigned int i = 0; i < word->candSeg.size(); ++i) {
 		word->candSeg[i].prob /= sumSegProb;
-		if (word->candSeg[i].prob < 1e-6)
-		//	word->candSeg[i].prob = log(word->candSeg[i].prob);
-		//else
+		if (word->candSeg[i].prob > 1e-6)
+			word->candSeg[i].prob = log(word->candSeg[i].prob);
+		else
 			word->candSeg[i].prob = -1000000;
 	}
 }
 
 void DependencyReader::addGoldSegToCand(WordInstance* word) {
 	// add the gold seg in to seg candidate if not exist (with prob 0)
-	double prob = hasCandidate ? (isTrain ? 0.01 : 0.0) : 1.0;
+	double prob = hasCandidate ? (isTrain ? 0.3 : 0.0) : 1.0;
 
 	string goldSegStr = word->goldForm[0];
 	for (unsigned int i = 1; i < word->goldForm.size(); ++i)
