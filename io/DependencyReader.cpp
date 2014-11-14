@@ -333,6 +333,7 @@ inst_ptr DependencyReader::nextInstance() {
 	concatSegStr(&s->word[0]);
 	addSegCand(&s->word[0], "<root>@#<root>@#<root-POS>_1.0||-1||0||_||1.0");
 
+
 	// process each line
 	for (unsigned int i = 0; i < data.size(); ++i) {
 		vector<string> line;

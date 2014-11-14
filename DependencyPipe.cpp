@@ -740,6 +740,7 @@ void DependencyPipe::createArcFeatureVector(DependencyInstance* inst,
 
 		if (options->lang == PossibleLang::Count) {
 			// morphology
+			/*
 			SegInstance& headSegInst = inst->word[headIndex.hWord].getCurrSeg();
 			SegInstance& modSegInst = inst->word[modIndex.hWord].getCurrSeg();
 			if (headSegInst.morphIndex == headIndex.hSeg
@@ -803,6 +804,7 @@ void DependencyPipe::createArcFeatureVector(DependencyInstance* inst,
 					}
 				}
 			}
+			*/
 		}
 
 		if (options->lang == PossibleLang::SPMRL) {
@@ -987,7 +989,7 @@ void DependencyPipe::createArcFeatureVector(DependencyInstance* inst,
 	code = fe->genCodeWF(Arc::nMW, nMW);
 	addCode(TemplateType::TArc, code | distFlag, fv);
 */
-
+/*
 	int flagVerb = 0x1;
 	int flagCoord = 0x2;
 	int flagPunc = 0x3;
@@ -1030,7 +1032,7 @@ void DependencyPipe::createArcFeatureVector(DependencyInstance* inst,
 	code = fe->genCodePWWF(Arc::HW_MW_FLAG, flagPunc, HW, MW);
 	addCode(TemplateType::TArc, code, fv);
 	addCode(TemplateType::TArc, code | distFlag, fv);
-
+*/
 }
 
 void DependencyPipe::createTripsFeatureVector(DependencyInstance* inst,
@@ -1740,7 +1742,7 @@ void DependencyPipe::createPosHOFeatureVector(DependencyInstance* inst, HeadInde
 
 		code = fe->genCodePPPF(HighOrder::ppP_P_nnP, ppP, P, nnP);
 		addCode(TemplateType::THighOrder, code, fv);
-
+/*
 		code = fe->genCodePPPPF(HighOrder::ppP_pP_P_nP, ppP, pP, P, nP);
 		addCode(TemplateType::THighOrder, code, fv);
 
@@ -1770,7 +1772,7 @@ void DependencyPipe::createPosHOFeatureVector(DependencyInstance* inst, HeadInde
 
 		code = fe->genCodePPPWF(HighOrder::L_P_nP_nnP, P, nP, nnP, L);
 		addCode(TemplateType::THighOrder, code, fv);
-
+*/
 	}
 
 }

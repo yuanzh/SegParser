@@ -29,7 +29,7 @@ Options::Options() {
 	test = false;
 	eval = false;
 
-	trainPruner = true;
+	trainPruner = false;
 
 	heuristicDep = false;
 
@@ -53,11 +53,11 @@ Options::Options() {
 	trainThread = 10;
 
 	seed = 0;
-	regC = 0.001;
+	regC = 0.01;
 
 	// feature;
-	useCS = false;			// consecutive sibling
-	useGP = false;			// grandparent
+	useCS = true;			// consecutive sibling
+	useGP = true;			// grandparent
 	useGS = false;			// grand-sibling
 	useTS = false;			// tri-sibling
 	useHB = false;			// head-bigram

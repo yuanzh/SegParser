@@ -9,6 +9,6 @@
 
 namespace segparser {
 
-const string PossibleLang::langString[] = {"qatar", "spmrl", "ctb", "unknown"};
+const string PossibleLang::langString[] = {"qatar", "spmrl", "ctb"};
 
 } /* namespace segparser */
