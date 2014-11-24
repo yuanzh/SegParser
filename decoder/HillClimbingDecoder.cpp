@@ -11,7 +11,7 @@
 
 namespace segparser {
 
-void* hillClimbingThreadFuncbak(void* instance) {
+void* hillClimbingThreadFunc(void* instance) {
 	HillClimbingDecoder* data = (HillClimbingDecoder*)instance;
 
 	pthread_t selfThread = pthread_self();
@@ -388,7 +388,7 @@ void* hillClimbingThreadFuncbak(void* instance) {
 	return NULL;
 }
 
-void* hillClimbingThreadFunc(void* instance) {
+void* hillClimbingThreadFuncbak(void* instance) {
 	HillClimbingDecoder* data = (HillClimbingDecoder*)instance;
 
 	pthread_t selfThread = pthread_self();
