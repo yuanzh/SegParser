@@ -53,7 +53,7 @@ Options::Options() {
 	trainThread = 10;
 
 	seed = 0;
-	regC = 0.001;
+	regC = 0.0001;
 
 	// feature;
 	useCS = true;			// consecutive sibling
@@ -74,7 +74,7 @@ Options::Options() {
 	evalPunc = true;
 	useTedEval = false;
 	jointSegPos = false;
-	earlyStop = 40;
+	earlyStop = 15;
 
 	addLoss = false;
 }

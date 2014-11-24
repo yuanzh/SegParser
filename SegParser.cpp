@@ -269,6 +269,14 @@ void SegParser::trainingIter(vector<inst_ptr>& goldList, vector<inst_ptr>& predL
 			}
 		}
 
+		if (options->useSP) {
+			uint64_t code = pipe->fe->genCodePF(HighOrder::SEG_PROB, 0);
+			int index = pipe->dataAlphabet->lookupIndex(TemplateType::THighOrder, code, false);
+			if (index > 0 && parameters->parameters[index] < 0.0) {
+				parameters->parameters[index] = 0.0;
+			}
+		}
+
 	}
 
 	cout << endl;

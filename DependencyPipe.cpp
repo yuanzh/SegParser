@@ -257,8 +257,8 @@ void DependencyPipe::buildDictionaryWithOOV(string& goldfile) {
 
 void DependencyPipe::createAlphabet(string& goldfile) {
 
-	//buildDictionary(goldfile);
-	buildDictionaryWithOOV(goldfile);
+	buildDictionary(goldfile);
+	//buildDictionaryWithOOV(goldfile);
 
 	cout << "Creating Alphabet ... ";
 	cout.flush();
