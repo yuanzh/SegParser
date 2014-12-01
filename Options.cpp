@@ -53,7 +53,7 @@ Options::Options() {
 	trainThread = 10;
 
 	seed = 0;
-	regC = 0.01;
+	regC = 0.0001;
 
 	// feature;
 	useCS = true;			// consecutive sibling
@@ -64,7 +64,7 @@ Options::Options() {
 	useAS = false;			// arbitrary sibling
 	useGGPC = false;		// grand-grand-parent;
 	usePSC = false;		// sibling grand-child
-	useHO = true;			// high order and global
+	useHO = false;			// high order and global
 	useSP = true;			// seg/pos feature
 
 	trainConvergeIter = 200;

@@ -269,6 +269,14 @@ void SegParser::trainingIter(vector<inst_ptr>& goldList, vector<inst_ptr>& predL
 			}
 		}
 
+		if (options->useSP) {
+			uint64_t code = pipe->fe->genCodePF(HighOrder::SEG_PROB, 0);
+			int index = pipe->dataAlphabet->lookupIndex(TemplateType::THighOrder, code, false);
+			if (index > 0 && parameters->parameters[index] < 0.0) {
+				parameters->parameters[index] = 0.0;
+			}
+		}
+
 	}
 
 	cout << endl;
@@ -522,19 +530,18 @@ int main(int argc, char** argv) {
 
 			prunerPipe.loadCoarseMap(prunerOptions.trainFile);
 
-			//vector<inst_ptr> trainingData = prunerPipe.createInstances(prunerOptions.trainFile);
-
 			pruner = new SegParser(&prunerPipe, &prunerOptions);
 			pruner->pruner = NULL;
-
+/*
 			pruner->loadModel(options.modelName + ".pruner");
 
 			int numFeats = prunerPipe.dataAlphabet->size() - 1;
 			int numTypes = prunerPipe.typeAlphabet->size() - 1;
 			cout << "Pruner Num Feats: " << numFeats << endl;
 			cout << "Pruner Num Edge Labels: " << numTypes << endl;
+*/
 
-/*
+			vector<inst_ptr> trainingData = prunerPipe.createInstances(prunerOptions.trainFile);
 			int numFeats = prunerPipe.dataAlphabet->size() - 1;
 			int numTypes = prunerPipe.typeAlphabet->size() - 1;
 			cout << "Pruner Num Feats: " << numFeats << endl;
@@ -542,7 +549,7 @@ int main(int argc, char** argv) {
 
 			pruner->train(trainingData);
 			pruner->closeDecoder();
-*/
+
 			pruner->evaluatePruning();
 		}
 

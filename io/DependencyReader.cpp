@@ -113,7 +113,7 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 						ele.candProb[k] = -1000000;
 				}
 				else {
-					if (!isTrain && ele.candProb[k] < 1e-6) {
+					if (ele.candProb[k] < 1e-6) {
 						ele.candProb[k] = -1000000;
 					}
 				}
@@ -136,7 +136,7 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 				word->candSeg[i].prob = -1000000;
 		}
 		else {
-			if (!isTrain && word->candSeg[i].prob < 1e-6) {
+			if (word->candSeg[i].prob < 1e-6) {
 				word->candSeg[i].prob = -1000000;
 			}
 		}
@@ -147,9 +147,9 @@ void DependencyReader::addGoldSegToCand(WordInstance* word) {
 	// add the gold seg in to seg candidate if not exist (with prob 0)
 	double prob = hasCandidate ? (isTrain ? 0.3 : 0.0) : 1.0;
 
-	if (options->lang == PossibleLang::Arabic) {
-		prob = hasCandidate ? 0.0 : 1.0;
-	}
+	//if (options->lang == PossibleLang::Arabic) {
+	//	prob = hasCandidate ? 0.0 : 1.0;
+	//}
 
 	string goldSegStr = word->goldForm[0];
 	for (unsigned int i = 1; i < word->goldForm.size(); ++i)
