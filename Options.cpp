@@ -58,13 +58,7 @@ Options::Options() {
 	// feature;
 	useCS = true;			// consecutive sibling
 	useGP = true;			// grandparent
-	useGS = false;			// grand-sibling
-	useTS = false;			// tri-sibling
-	useHB = false;			// head-bigram
-	useAS = false;			// arbitrary sibling
-	useGGPC = false;		// grand-grand-parent;
-	usePSC = false;		// sibling grand-child
-	useHO = false;			// high order and global
+	useHO = true;			// high order and global
 	useSP = true;			// seg/pos feature
 
 	trainConvergeIter = 200;
@@ -73,10 +67,13 @@ Options::Options() {
 
 	evalPunc = true;
 	useTedEval = false;
-	jointSegPos = false;
+	jointSegPos = true;
 	earlyStop = 40;
 
 	addLoss = false;
+
+	saveBestModel = true;
+	bestScore = -100;
 }
 
 Options::~Options() {
@@ -107,12 +104,11 @@ void Options::processArguments(int argc, char** argv) {
 		}
 		if(pair[0].compare("test-file") == 0) {
 			testFile = pair[1];
+			if (outFile.empty())
+				outFile = testFile + ".res";
 		}
 		if(pair[0].compare("model-name") == 0) {
 			modelName = pair[1];
-		}
-		if(pair[0].compare("output-file") == 0) {
-			outFile = pair[1];
 		}
  		if(pair[0].compare("decode-type") == 0) {
 			proj = pair[1].compare("proj") == 0;
@@ -156,6 +152,9 @@ void Options::processArguments(int argc, char** argv) {
 		if (pair[0].compare("earlystop") == 0) {
 			earlyStop = atoi(pair[1].c_str());
 		}
+		if (pair[0].compare("savebest") == 0) {
+			saveBestModel = (pair[1] == "true" ? true : false);
+		}
 	}
 
 
@@ -176,6 +175,8 @@ int Options::findLang(string file) {
 }
 
 void Options::setPrunerOptions() {
+	modelName = modelName + ".pruner";
+
 	test = false;
 
 	trainPruner = false;
@@ -197,14 +198,10 @@ void Options::setPrunerOptions() {
 	// feature;
 	useCS = false;			// consecutive sibling
 	useGP = false;			// grandparent
-	useGS = false;			// grand-sibling
-	useTS = false;			// tri-sibling
-	useHB = false;			// head-bigram
-	useAS = false;			// arbitrary sibling
-	useGGPC = false;		// grand-grand-parent;
-	usePSC = false;		// sibling grand-child
 	useHO = false;			// high order and global
 	useSP = false;
+
+	saveBestModel = false;
 }
 
 void Options::outputArg() {
@@ -221,13 +218,7 @@ void Options::outputArg() {
 	cout << "seed: " << seed << endl;
 	cout << "use consecutive sibling: " << useCS << endl;
 	cout << "use grandparent: " << useGP << endl;
-	cout << "use grand sibling: " << useGS << endl;
-	cout << "use tri-sibling: " << useTS << endl;
-	cout << "use head bigram: " << useHB << endl;
-	cout << "use arbitrary sibling: " << useAS << endl;
-	cout << "use ggpc: " << useGGPC << endl;
-	cout << "use psc: " << usePSC << endl;
-	cout << "use high order: " << useHO << endl;
+	cout << "use grand sibling, tri-sibling and high order: " << useHO << endl;
 	cout << "learning mode: " << learningMode << endl;
 	cout << "testing mode: " << testingMode << endl;
 	cout << "update gold: " << updateGold << endl;
@@ -236,15 +227,13 @@ void Options::outputArg() {
 	cout << "labeled: " << labeled << endl;
 	cout << "reg C: " << regC << endl;
 	cout << "heuristic dep: " << heuristicDep << endl;
-//	cout << "restart iter: " << restartIter << endl;
 	cout << "train converge iter: " << trainConvergeIter << endl;
 	cout << "test converge iter: " << testConvergeIter << endl;
 	cout << "early stop: " << earlyStop << endl;
 	cout << "tedeval: " << useTedEval << endl;
 	cout << "joint seg pos: " << jointSegPos << endl;
 	cout << "prune: " << trainPruner << endl;
-	cout << "prune thresh: " << pruneThresh << endl;
-	cout << "max head: " << maxHead << endl;
+	cout << "save best model: " << saveBestModel << endl;
 	cout << "------\n" << endl;
 }
 

@@ -60,13 +60,7 @@ public:
 	// feature;
 	bool useCS;			// consecutive sibling
 	bool useGP;			// grandparent
-	bool useGS;			// grand-sibling
-	bool useTS;			// tri-sibling
-	bool useHB;			// head-bigram
-	bool useAS;			// arbitrary sibling
-	bool useGGPC;		// grand-grand-parent;
-	bool usePSC;		// sibling grand-child
-	bool useHO;			// high order and global
+	bool useHO;			// grand-sibling, tri-sibling and high order and global
 	bool useSP;			// seg pos feature
 
 	int trainConvergeIter;	// for hill climbing
@@ -79,6 +73,9 @@ public:
 	int earlyStop;
 
 	bool addLoss;
+
+	bool saveBestModel;
+	double bestScore;
 
 	Options();
 	virtual ~Options();

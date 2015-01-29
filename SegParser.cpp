@@ -198,14 +198,6 @@ void SegParser::train(vector<inst_ptr>& il) {
 	if (options->test) {
 		if (dt->isDevTesting)
 			pthread_join(dt->workThread, NULL);
-
-		if (devTimes > 0) {
-			// get last dev accuracy
-			//string devfile = options->testFile;
-			//string outfile = devfile + ".res";
-
-			//evaluate(devfile, outfile, options);
-		}
 	}
 }
 
@@ -312,19 +304,9 @@ void SegParser::checkDevStatus(int iter) {
 		pthread_mutex_unlock(&dt->processMutex);
 	}
 	else {
-		cout << "dev and test done." << endl;
-
-		if (devTimes > 0) {
-			// get last dev accuracy
-    		string devfile = options->testFile;
-    		string outfile = devfile + ".res";
-
-    	    evaluate(devfile, outfile, options);
-		}
-
 		// start new thread for dev
 		string devfile = options->testFile;
-		string devoutfile = devfile + ".res";
+		string devoutfile = options->outFile;
 
 		cout << "build dev params" << endl;
 		devParams->copyParams(parameters);
@@ -351,14 +333,6 @@ void SegParser::checkDevStatus(int iter) {
 			cout << "pos weight: " << parameters->parameters[index] << endl;
 			cout << "dev pos weight: " << devParams->parameters[index] << endl;
 		}
-		cout << "Saving model ... ";
-	    cout.flush();
-	    if (pruner) {
-	    	pruner->saveModel(options->modelName + ".pruner", pruner->parameters);
-	    }
-	    saveModel(options->modelName, devParams);
-	    saveModel(options->modelName + ".train", parameters);
-	    cout << "done." << endl;
 
 	    cout << "start new dev " << devTimes << endl;
 		dt->start(devfile, devoutfile, this, false);
@@ -578,14 +552,14 @@ int main(int argc, char** argv) {
 
 	    sp.train(trainingData);
 
-	    cout << "Saving model ... ";
-	    cout.flush();
-	    if (sp.pruner) {
-	    	sp.pruner->saveModel(options.modelName + ".pruner", sp.pruner->parameters);
-	    }
-	    sp.saveModel(options.modelName, sp.parameters);
-	    sp.closeDecoder();
-	    cout << "done." << endl;
+	    //cout << "Saving model ... ";
+	    //cout.flush();
+	    //if (sp.pruner) {
+	    //	sp.pruner->saveModel(options.modelName + ".pruner", sp.pruner->parameters);
+	    //}
+	    //sp.saveModel(options.modelName, sp.parameters);
+	    //sp.closeDecoder();
+	    //cout << "done." << endl;
 
 	}
 
@@ -624,7 +598,7 @@ int main(int argc, char** argv) {
 
 	    // run multi-thread to test
 		string devfile = options.testFile;
-		string devoutfile = devfile + ".res";
+		string devoutfile = options.outFile;
 		cout << "build dev params" << endl;
 		testSp.devParams->copyParams(testSp.parameters);
 	    testSp.dt->start(devfile, devoutfile, &testSp, true);

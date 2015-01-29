@@ -264,17 +264,22 @@ void DependencyInstance::setInstIds(DependencyPipe* pipe, Options* options) {
 					}
 
 					// special pos
-					string cpos = coarseMap[ele.candPos[l]];
-					if (cpos.compare("CONJ") == 0 && isCoord(options->lang, ele.form))
-						ele.candSpecialPos[l] = SpecialPos::C;
-					else if (cpos.compare("ADP") == 0)
-						ele.candSpecialPos[l] = SpecialPos::P;
-					else if (isPunc(ele.form) || (options->lang == PossibleLang::Chinese && ele.candPos[l] == "PU"))
-						ele.candSpecialPos[l] = SpecialPos::PNX;
-					else if (cpos.compare("VERB") == 0)
-						ele.candSpecialPos[l] = SpecialPos::V;
-					else
+					if (coarseMap.find(ele.candPos[l]) != coarseMap.end()) {
+						string cpos = coarseMap[ele.candPos[l]];
+						if (cpos.compare("CONJ") == 0 && isCoord(options->lang, ele.form))
+							ele.candSpecialPos[l] = SpecialPos::C;
+						else if (cpos.compare("ADP") == 0)
+							ele.candSpecialPos[l] = SpecialPos::P;
+						else if (isPunc(ele.form) || (options->lang == PossibleLang::Chinese && ele.candPos[l] == "PU"))
+							ele.candSpecialPos[l] = SpecialPos::PNX;
+						else if (cpos.compare("VERB") == 0)
+							ele.candSpecialPos[l] = SpecialPos::V;
+						else
+							ele.candSpecialPos[l] = SpecialPos::OTHER;
+					}
+					else {
 						ele.candSpecialPos[l] = SpecialPos::OTHER;
+					}
 				}
 			}
 

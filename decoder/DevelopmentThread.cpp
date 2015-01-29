@@ -57,7 +57,6 @@ void* outputThreadFunc(void* instance) {
 		if (allFinish && !inst->id2Pred.empty() && !find) {
 			cout << "output thread bug" << endl;
 			badcnt++;
-			//System.exit(0);
 		}
 		else {
 			badcnt = 0;
@@ -124,20 +123,11 @@ void* decodeThreadFunc(void* instance) {
 			cout.flush();
 		}
 
-		//cout << "decode " << currProcessID << endl;
-
-		//if (currProcessID < 17) {
-		//	cout << "skip" << endl;
-		//}
-		//else {
-			decoder->decode(pred.get(), &gold, fe.get());
-		//}
+		decoder->decode(pred.get(), &gold, fe.get());
 
 		pthread_mutex_lock( &inst->finishMutex );
 
 		inst->id2Pred[currProcessID] = pred;
-
-		//cout << "evaluate " << currProcessID << endl;
 
 		inst->evaluate(pred.get(), &gold);
 
@@ -248,6 +238,20 @@ void* work(void* instance) {
 	}
 
 	inst->reader.close();
+
+	double accuracy = (2 * deppre * deprec) / (deppre + deprec);		// dep f1 score
+
+	if (!inst->options->saveBestModel || accuracy > inst->options->bestScore - 1e-6) {
+		inst->options->bestScore = accuracy;
+		cout << "Saving model ... ";
+		cout.flush();
+		if (inst->sp->pruner) {
+			inst->sp->pruner->saveModel(inst->options->modelName + ".pruner", inst->sp->pruner->parameters);
+		}
+		inst->sp->saveModel(inst->options->modelName, inst->sp->devParams);
+		cout << "done." << endl;
+	}
+	cout << "testing on dev done." << endl;
 
 	inst->isDevTesting = false;
 

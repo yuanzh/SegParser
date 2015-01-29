@@ -35,18 +35,23 @@ DependencyPipe::~DependencyPipe() {
 
 void DependencyPipe::loadCoarseMap(string& file) {
 	int p = file.find("/data/");
-	string path = file.substr(0, file.find("/", p + 1));
+	string path = file.substr(0, p + 6);
 
-	string mapFile = path + string("/lab/") + PossibleLang::langString[options->lang] + string(".uni.map");
+	string mapFile = path + PossibleLang::langString[options->lang] + string(".uni.map");
 	ifstream fin(mapFile.c_str());
-	string str;
-	while (!fin.eof()) {
-		getline(fin, str);
-		if (str.empty())
-			continue;
-		vector<string> data;
-		StringSplit(str, "\t", &data);
-		coarseMap[data[0]] = data[1];
+	if (fin.good()) {
+		string str;
+		while (!fin.eof()) {
+			getline(fin, str);
+			if (str.empty())
+				continue;
+			vector<string> data;
+			StringSplit(str, "\t", &data);
+			coarseMap[data[0]] = data[1];
+		}
+	}
+	else {
+		cout << "Warning: cannot find universal map file." << endl;
 	}
 	fin.close();
 }
@@ -360,26 +365,32 @@ vector<inst_ptr> DependencyPipe::createInstances(string goldFile) {
 
 	reader.close();
 
-	vector<inst_ptr> ret;
-	ret.resize(trainData.size());
-	vector<bool> used;
-	used.resize(trainData.size());
-	Random r(0);
-	int id = 0;
-	for (unsigned int i = 0; i < trainData.size(); ++i) {
-		id = (id + r.nextInt(trainData.size())) % trainData.size();
-		while (used[id]) {
-			id = (id + 1) % trainData.size();
+	if (options->lang == PossibleLang::Chinese) {
+		// shuffle data for Chinese
+		vector<inst_ptr> ret;
+		ret.resize(trainData.size());
+		vector<bool> used;
+		used.resize(trainData.size());
+		Random r(0);
+		int id = 0;
+		for (unsigned int i = 0; i < trainData.size(); ++i) {
+			id = (id + r.nextInt(trainData.size())) % trainData.size();
+			while (used[id]) {
+				id = (id + 1) % trainData.size();
+			}
+			ret[i] = trainData[id];
+			used[id] = true;
 		}
-		ret[i] = trainData[id];
-		used[id] = true;
-	}
-	for (unsigned int i = 0; i < trainData.size(); ++i) {
-		assert(used[i]);
-	}
+		for (unsigned int i = 0; i < trainData.size(); ++i) {
+			assert(used[i]);
+		}
 
-	//return trainData;
-	return ret;
+		return ret;
+	}
+	else {
+		// don't shuffle for others, in order to be consistent with the experiment in the paper
+		return trainData;
+	}
 }
 
 int DependencyPipe::findRightNearestChildID(vector<HeadIndex>& child, HeadIndex id) {
