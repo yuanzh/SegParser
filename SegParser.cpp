@@ -530,9 +530,9 @@ int main(int argc, char** argv) {
 
 			prunerPipe.loadCoarseMap(prunerOptions.trainFile);
 
+/*
 			pruner = new SegParser(&prunerPipe, &prunerOptions);
 			pruner->pruner = NULL;
-/*
 			pruner->loadModel(options.modelName + ".pruner");
 
 			int numFeats = prunerPipe.dataAlphabet->size() - 1;
@@ -542,6 +542,10 @@ int main(int argc, char** argv) {
 */
 
 			vector<inst_ptr> trainingData = prunerPipe.createInstances(prunerOptions.trainFile);
+
+			pruner = new SegParser(&prunerPipe, &prunerOptions);
+			pruner->pruner = NULL;
+
 			int numFeats = prunerPipe.dataAlphabet->size() - 1;
 			int numTypes = prunerPipe.typeAlphabet->size() - 1;
 			cout << "Pruner Num Feats: " << numFeats << endl;

@@ -46,7 +46,7 @@ all: SegParser
 SegParser: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++ -L/scratch/yuanzh/workspace/Code/boost_1_55_0/stage/lib/ -o "SegParser" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++  -o "SegParser" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

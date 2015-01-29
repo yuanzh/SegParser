@@ -106,17 +106,17 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 			assert(sumPosProb > 0.0);
 			for (unsigned int k = 0; k < ele.candPos.size(); ++k) {
 				ele.candProb[k] /= sumPosProb;
-				if (options->lang != PossibleLang::Arabic) {
+				//if (options->lang != PossibleLang::Arabic) {
 					if (ele.candProb[k] > 1e-6)
 						ele.candProb[k] = log(ele.candProb[k]);
 					else
 						ele.candProb[k] = -1000000;
-				}
-				else {
-					if (ele.candProb[k] < 1e-6) {
-						ele.candProb[k] = -1000000;
-					}
-				}
+				//}
+				//else {
+				//	if (ele.candProb[k] < 1e-6) {
+				//		ele.candProb[k] = -1000000;
+				//	}
+				//}
 			}
 		}
 		sumSegProb += word->candSeg[i].prob;
@@ -129,17 +129,17 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 	assert(sumSegProb > 0.0);
 	for (unsigned int i = 0; i < word->candSeg.size(); ++i) {
 		word->candSeg[i].prob /= sumSegProb;
-		if (options->lang != PossibleLang::Arabic) {
+		//if (options->lang != PossibleLang::Arabic) {
 			if (word->candSeg[i].prob > 1e-6)
 				word->candSeg[i].prob = log(word->candSeg[i].prob);
 			else
 				word->candSeg[i].prob = -1000000;
-		}
-		else {
-			if (word->candSeg[i].prob < 1e-6) {
-				word->candSeg[i].prob = -1000000;
-			}
-		}
+		//}
+		//else {
+		//	if (word->candSeg[i].prob < 1e-6) {
+		//		word->candSeg[i].prob = -1000000;
+		//	}
+		//}
 	}
 }
 
@@ -148,7 +148,7 @@ void DependencyReader::addGoldSegToCand(WordInstance* word) {
 	double prob = hasCandidate ? (isTrain ? 0.3 : 0.0) : 1.0;
 
 	//if (options->lang == PossibleLang::Arabic) {
-	//	prob = hasCandidate ? 0.0 : 1.0;
+	//	prob = hasCandidate ? (isTrain ? 0.9 : 0.0) : 1.0;
 	//}
 
 	string goldSegStr = word->goldForm[0];
