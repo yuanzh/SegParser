@@ -16,8 +16,8 @@ Alphabet::Alphabet(int capacity) {
 	growthStopped = false;
 }
 
-Alphabet::Alphabet() {
-	Alphabet(10000);
+Alphabet::Alphabet() : Alphabet(10000) {
+	//Alphabet(10000);
 }
 
 Alphabet::~Alphabet() {

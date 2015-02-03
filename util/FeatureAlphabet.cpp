@@ -25,8 +25,7 @@ FeatureAlphabet::FeatureAlphabet (int capacity) {
 	table[TemplateType::THighOrder] = &highOrderMap;
 }
 
-FeatureAlphabet::FeatureAlphabet() {
-	FeatureAlphabet(10000);
+FeatureAlphabet::FeatureAlphabet() : FeatureAlphabet(10000) {
 }
 
 FeatureAlphabet::~FeatureAlphabet() {

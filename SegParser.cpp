@@ -17,7 +17,7 @@
 namespace segparser {
 
 SegParser::SegParser(DependencyPipe* pipe, Options* options)
-	: pipe(pipe), options(options) {
+	: pipe(pipe), options(options), devTimes(0) {
 	// Set up arrays
 	parameters = new Parameters(pipe->dataAlphabet->size(), options);
 	devParams = new Parameters(pipe->dataAlphabet->size(), options);
@@ -26,11 +26,11 @@ SegParser::SegParser(DependencyPipe* pipe, Options* options)
 		decoder = DependencyDecoder::createDependencyDecoder(options, options->learningMode, options->trainThread, true);
 		decoder->initialize();
 	}
+	else {
+		decoder = NULL;
+	}
 	dt = new DevelopmentThread();
 	FeatureVector::initVec(pipe->dataAlphabet->size());
-
-	bestLabAcc = -DBL_MAX;
-	bestUlabAcc = -DBL_MAX;
 }
 
 void SegParser::closeDecoder() {
@@ -84,6 +84,10 @@ void SegParser::train(vector<inst_ptr>& il) {
 		if (dt->isDevTesting)
 			pthread_join(dt->workThread, NULL);
 	}
+
+	if (options->saveBestModel) {
+		cout << "Best model performance: " << options->bestScore << endl;
+	}
 }
 
 void SegParser::trainingIter(vector<inst_ptr>& goldList, vector<inst_ptr>& predList, int iter) {
@@ -127,38 +131,33 @@ void SegParser::trainingIter(vector<inst_ptr>& goldList, vector<inst_ptr>& predL
 		checkDevStatus(iter);
 }
 
-void SegParser::resetParams() {
-	parameters->averageParams(decoder->getUpdateTimes());
-	for (unsigned int j = 0; j < parameters->total.size(); ++j)
-		parameters->total[j] = 0;
-	decoder->resetUpdateTimes();
-}
-
 void SegParser::checkDevStatus(int iter) {
 	if (dt->isDevTesting) {
 		cout << "processing sentences: ";
 
 		pthread_mutex_lock(&dt->finishMutex);
-		cout << dt->currFinishID << " ";
+		cout << dt->currFinishID << " to ";
 		pthread_mutex_unlock(&dt->finishMutex);
 
 		pthread_mutex_lock(&dt->processMutex);
 		cout << dt->currProcessID << endl;
 		pthread_mutex_unlock(&dt->processMutex);
-	}
-	else {
-		// start new thread for dev
-		string devfile = options->testFile;
-		string devoutfile = options->outFile;
 
-		cout << "build dev params" << endl;
-		devParams->copyParams(parameters);
-		devParams->averageParams(decoder->getUpdateTimes());
-
-	    cout << "start new dev " << devTimes << endl;
-		dt->start(devfile, devoutfile, this, false);
-		devTimes++;
+		cout << "Wait for testing to finish." << endl;
+		pthread_join(dt->workThread, NULL);
 	}
+
+	// start new thread for dev
+	string devfile = options->testFile;
+	string devoutfile = options->outFile;
+
+	cout << "build dev params" << endl;
+	devParams->copyParams(parameters);
+	devParams->averageParams(decoder->getUpdateTimes());
+
+	cout << "start new dev " << devTimes << endl;
+	dt->start(devfile, devoutfile, this, false);
+	devTimes++;
 }
 
 ///////////////////////////////////////////////////////
@@ -330,7 +329,7 @@ int main(int argc, char** argv) {
 	    cout << "Num Edge Labels: " << numTypes << endl;
 
 	    sp.train(trainingData);
-
+	    sp.closeDecoder();
 	}
 
 	if (options.test) {

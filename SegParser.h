@@ -53,11 +53,6 @@ public:
 
 private:
 	int devTimes;
-	double bestLabAcc;
-	double bestUlabAcc;
-	int restartIter;
-
-	void resetParams();
 };
 
 } /* namespace segparser */

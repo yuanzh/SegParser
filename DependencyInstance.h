@@ -162,6 +162,8 @@ public:
 		wordid = -1;
 		goldAlIndex = -1;
 		goldMorphIndex = -1;
+		optPosCount = 0;
+		currSegCandID = 0;
 	}
 
 	SegInstance& getCurrSeg() {

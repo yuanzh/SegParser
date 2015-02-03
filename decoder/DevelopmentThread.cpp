@@ -245,7 +245,7 @@ void* work(void* instance) {
 		inst->sp->saveModel(inst->options->modelName, inst->sp->devParams);
 		cout << "done." << endl;
 	}
-	cout << "testing on dev done." << endl;
+	cout << "testing done." << endl;
 
 	inst->isDevTesting = false;
 
