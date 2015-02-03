@@ -69,16 +69,6 @@ void FeatureVector::concatNeg(FeatureVector* fv) {
 double FeatureVector::dotProduct(FeatureVector* fv) {
 	double result = 0.0;
 
-//	for(unsigned int i = 0; i < binaryIndex.size(); ++i) {
-//		assert(dpVec[binaryIndex[i]] == 0.0);
-//	}
-//	for(unsigned int i = 0; i < negBinaryIndex.size(); ++i) {
-//		assert(dpVec[negBinaryIndex[i]] == 0.0);
-//	}
-//	for(unsigned int i = 0; i < normalIndex.size(); ++i) {
-//		assert(dpVec[normalIndex[i]] == 0.0);
-//	}
-
 	double b = 2.0;
 
 	for(unsigned int i = 0; i < binaryIndex.size(); ++i) {

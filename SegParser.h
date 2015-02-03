@@ -26,24 +26,8 @@ class Parameters;
 class DependencyDecoder;
 class DevelopmentThread;
 
-class TestClass {
-public:
-	int a;
-	TestClass() {
-		a = 2;
-	}
-};
-
-typedef boost::shared_ptr<TestClass> test_ptr;
-
 class SegParser {
 public:
-	vector<test_ptr>* ptr;
-	TestClass* a;
-	pthread_mutex_t mutex;
-	//multi_array<TestClass*, 2>* ptr;
-	//multi_array<int, 2>* score;
-
 	SegParser(DependencyPipe* pipe, Options* options);
 	virtual ~SegParser();
 	void train(vector<inst_ptr>& il);

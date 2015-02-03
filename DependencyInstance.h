@@ -75,7 +75,7 @@ public:
 	int st;
 	int en;
 
-	SegElement() { form = ""; formid = -1; lemma = ""; lemmaid = -1; st = -1; en = -1;}
+	SegElement() : form(""), formid(-1), lemma(""), lemmaid(-1), labid(-1), currPosCandID(-1), st(-1), en(-1) {}
 
 	int candPosNum() {
 		return candPos.size();
@@ -111,17 +111,13 @@ public:
 	string segStr;
 	double prob;
 
-	int inNode;				// node for incoming arc by heuristic rules
-	int outNode;			// node for outward arc by heuristic rules
-	int AlNode;				// node of Al, -1 if not exist
-
 	// morphology features
 	int AlIndex;
 	int morphIndex;
 	vector<string> morph;		//per/gen/num
 	vector<int> morphid;
 
-	SegInstance() { segStr = ""; prob = 0.0; AlIndex = -1; morphIndex = -1;}
+	SegInstance() : segStr(""), prob(0.0), AlIndex(-1), morphIndex(-1) {}
 
 	int size() {
 		return element.size();

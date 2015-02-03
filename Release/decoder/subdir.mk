@@ -7,22 +7,19 @@ CPP_SRCS += \
 ../decoder/ClassifierDecoder.cpp \
 ../decoder/DependencyDecoder.cpp \
 ../decoder/DevelopmentThread.cpp \
-../decoder/HillClimbingDecoder.cpp \
-../decoder/SampleRankDecoder.cpp 
+../decoder/HillClimbingDecoder.cpp 
 
 OBJS += \
 ./decoder/ClassifierDecoder.o \
 ./decoder/DependencyDecoder.o \
 ./decoder/DevelopmentThread.o \
-./decoder/HillClimbingDecoder.o \
-./decoder/SampleRankDecoder.o 
+./decoder/HillClimbingDecoder.o 
 
 CPP_DEPS += \
 ./decoder/ClassifierDecoder.d \
 ./decoder/DependencyDecoder.d \
 ./decoder/DevelopmentThread.d \
-./decoder/HillClimbingDecoder.d \
-./decoder/SampleRankDecoder.d 
+./decoder/HillClimbingDecoder.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

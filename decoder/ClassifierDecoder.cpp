@@ -46,10 +46,6 @@ void ClassifierDecoder::train(DependencyInstance* gold, DependencyInstance* pred
 		SegInstance& goldInst = gold->word[mw].getCurrSeg();
 
 		for (int ms = 0; ms < segInst.size(); ++ms) {
-			if (options->heuristicDep && ms != pred->word[mw].getCurrSeg().inNode) {
-				continue;
-			}
-
 			HeadIndex m(mw, ms);
 			findOptHead(pred, gold, m, fe, cache);
 
@@ -96,10 +92,7 @@ void ClassifierDecoder::findOptHead(DependencyInstance* pred, DependencyInstance
 				continue;
 			}
 
-			if (options->heuristicDep)
-				assert(hw != m.hWord && hs == segInst.outNode);
-			else
-				assert(hw != m.hWord || hs != m.hSeg);
+			assert(hw != m.hWord || hs != m.hSeg);
 
 			HeadIndex h(hw, hs);
 

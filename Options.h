@@ -29,12 +29,8 @@ public:
 	// model type
 	bool train;
 	bool test;
-	bool eval;
 
 	bool trainPruner;
-
-	bool proj;
-	bool labeled;
 
 	int learningMode;
 	int testingMode;
@@ -46,16 +42,13 @@ public:
 
 	int trainSentences;
 	int testSentences;
-	int maxLength;
+	int maxLength;			// maximum length of the sentences during *training*
 
 	int devThread;
 	int trainThread;		// only useful when hill climbing training
 
 	int seed;
 	double regC;
-
-	bool updateGold;
-	bool heuristicDep;
 
 	// feature;
 	bool useCS;			// consecutive sibling
@@ -65,14 +58,11 @@ public:
 
 	int trainConvergeIter;	// for hill climbing
 	int testConvergeIter;
-	int restartIter;	// for sample rank
 
 	bool evalPunc;
 	bool useTedEval;
-	bool jointSegPos;
-	int earlyStop;
-
-	bool addLoss;
+	bool jointSegPos;	// joint model or pipeline
+	int earlyStop;		// early stop strategy in training
 
 	bool saveBestModel;
 	double bestScore;

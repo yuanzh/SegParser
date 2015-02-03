@@ -168,102 +168,12 @@ void DependencyPipe::buildDictionary(string& goldfile) {
 
 	cout << "Done." << endl;
 
-	//gold->output();
-
 	setAndCheckOffset();
-}
-
-void DependencyPipe::buildDictionaryWithOOV(string& goldfile) {
-	cout << "Creating Dictionary with OOV ... ";
-	cout.flush();
-
-	// fill alphabet with special value
-	posAlphabet->lookupIndex("#START#");
-	posAlphabet->lookupIndex("#MID#");
-	posAlphabet->lookupIndex("#END#");
-
-	typeAlphabet->lookupIndex("<no-type>");
-
-	buildSuffixList();
-
-	DependencyReader reader(options, goldfile);
-	if (!options->jointSegPos)
-		reader.hasCandidate = false;
-	reader.isTrain = true;
-
-	inst_ptr gold = reader.nextInstance();
-
-	int cnt = 0;
-	unordered_map<string, int> wordCount;
-
-	while (gold) {
-		if ((cnt + 1) % 1000 == 0) {
-			cout << (cnt + 1) << "  ";
-			cout.flush();
-		}
-
-		for (int i = 0; i < gold->numWord; ++i) {
-			WordInstance& word = gold->word[i];
-			for (unsigned int j = 0; j < word.goldForm.size(); ++j) {
-				wordCount[gold->normalize(word.goldForm[j])]++;
-			}
-
-			SegInstance& currSeg = word.getCurrSeg();
-			// label id
-			for (int j = 0; j < currSeg.size(); ++j)
-				typeAlphabet->lookupIndex(word.goldLab[j]);
-
-			for (unsigned int j = 0; j < word.candSeg.size(); ++j) {
-				SegInstance& seg = word.candSeg[j];
-				for (unsigned int k = 0; k < seg.morph.size(); ++k) {
-					posAlphabet->lookupIndex(seg.morph[k]);
-				}
-
-				for (int k = 0; k < seg.size(); ++k) {
-					SegElement& ele = seg.element[k];
-					// pos
-					for (int l = 0; l < ele.candPosNum(); ++l) {
-						posAlphabet->lookupIndex(ele.candPos[l]);
-					}
-				}
-			}
-		}
-
-		gold = reader.nextInstance();
-		cnt++;
-		if (cnt >= options->trainSentences)
-			break;
-	}
-	reader.close();
-
-	assert(lexAlphabet->size() == 1);
-
-	lexAlphabet->lookupIndex("#START#");
-	lexAlphabet->lookupIndex("#MID#");
-	lexAlphabet->lookupIndex("#END#");
-	lexAlphabet->lookupIndex("\"");
-	lexAlphabet->lookupIndex("(");
-	lexAlphabet->lookupIndex(")");
-
-	for (unordered_map<string, int>::iterator iter = wordCount.begin(); iter != wordCount.end(); ++iter) {
-		if (iter->second >= 2) {
-			lexAlphabet->lookupIndex(iter->first);
-		}
-	}
-
-	cout << "Done." << endl;
-
-	setAndCheckOffset();
-
-	lexAlphabet->stopGrowth();
-	typeAlphabet->stopGrowth();
-	posAlphabet->stopGrowth();
 }
 
 void DependencyPipe::createAlphabet(string& goldfile) {
 
 	buildDictionary(goldfile);
-	//buildDictionaryWithOOV(goldfile);
 
 	cout << "Creating Alphabet ... ";
 	cout.flush();
@@ -286,29 +196,12 @@ void DependencyPipe::createAlphabet(string& goldfile) {
 		gold->setInstIds(this, options);
 		createFeatureVector(gold.get(), &(gold->fv));
 
-		//gold->fv.output();
-		//gold->output();
-
 		cnt++;
 		if (cnt >= options->trainSentences)
 			break;
 
 		gold = reader.nextInstance();
 
-	}
-
-	if (options->useHO) {
-		uint64_t code = fe->genCodePF(HighOrder::NP, 0);
-		dataAlphabet->lookupIndex(TemplateType::THighOrder, code, true);
-		code = fe->genCodePF(HighOrder::NP, 1);
-		dataAlphabet->lookupIndex(TemplateType::THighOrder, code, true);
-
-		//for (int i = 0; i < posAlphabet->size() + 1; ++i) {
-		//	for (int j = 0; j < posAlphabet->size() + 1; ++j) {
-		//		code = fe->genCodePPF(HighOrder::NP_HC_MC, i, j);
-		//		dataAlphabet->lookupIndex(TemplateType::THighOrder, code, true);
-		//	}
-		//}
 	}
 
 	cout << "Done." << endl;
@@ -648,40 +541,6 @@ void DependencyPipe::createArcFeatureVector(DependencyInstance* inst,
 	addCode(TemplateType::TArc, code | distFlag, fv);
 
 	if (options->lang == PossibleLang::Chinese) {
-		/*
-		int HL = inst->characterid[headEle.st];
-		int ML = inst->characterid[modEle.st];
-
-		code = fe->genCodeWF(Arc::HL, HL);
-		addCode(TemplateType::TArc, code, fv);
-
-		code = fe->genCodePWF(Arc::HP_ML, HP, ML);
-		addCode(TemplateType::TArc, code, fv);
-
-		code = fe->genCodePWF(Arc::HL_MP, MP, HL);
-		addCode(TemplateType::TArc, code, fv);
-
-		code = fe->genCodeWWF(Arc::HL_ML, HL, ML);
-		addCode(TemplateType::TArc, code, fv);
-
-		code = fe->genCodePWF(Arc::HP_HL, HP, HL);
-		addCode(TemplateType::TArc, code, fv);
-
-		code = fe->genCodePPWF(Arc::HP_MP_ML, HP, MP, ML);
-		addCode(TemplateType::TArc, code, fv);
-
-		code = fe->genCodePPWF(Arc::HP_HL_MP, HP, MP, HL);
-		addCode(TemplateType::TArc, code, fv);
-
-		code = fe->genCodePWWF(Arc::HL_MP_ML, MP, HL, ML);	// fix a HP-MP bug here
-		addCode(TemplateType::TArc, code, fv);
-
-		code = fe->genCodePWWF(Arc::HP_HL_ML, HP, HL, ML);
-		addCode(TemplateType::TArc, code, fv);
-
-		code = fe->genCodePPWWF(Arc::HP_HL_MP_ML, HP, MP, HL, ML);
-		addCode(TemplateType::TArc, code, fv);
-		 */
 
 		if (headEle.en > headEle.st && headEle.st >= 0) {
 			int HL = inst->characterid[headEle.en - 1];
@@ -696,12 +555,6 @@ void DependencyPipe::createArcFeatureVector(DependencyInstance* inst,
 			code = fe->genCodePWF(Arc::HL_MP, MP, HL);
 			addCode(TemplateType::TArc, code, fv);
 
-			//code = fe->genCodeWWF(Arc::HL_ML, HL, ML);
-			//addCode(TemplateType::TArc, code, fv);
-
-			//code = fe->genCodePWF(Arc::HP_HL, HP, HL);
-			//addCode(TemplateType::TArc, code, fv);
-
 			code = fe->genCodePPWF(Arc::HP_MP_ML, HP, MP, ML);
 			addCode(TemplateType::TArc, code, fv);
 
@@ -713,9 +566,6 @@ void DependencyPipe::createArcFeatureVector(DependencyInstance* inst,
 
 			code = fe->genCodePWWF(Arc::HP_HL_ML, HP, HL, ML);
 			addCode(TemplateType::TArc, code, fv);
-
-			//code = fe->genCodePPWWF(Arc::HP_HL_MP_ML, HP, MP, HL, ML);
-			//addCode(TemplateType::TArc, code, fv);
 		}
 	}
 	else if (options->lang == PossibleLang::Arabic || options->lang == PossibleLang::SPMRL) {
@@ -915,37 +765,6 @@ void DependencyPipe::createArcFeatureVector(DependencyInstance* inst,
 		}
 
 	}
-/*
-	// contextual
-	int pHW = headSegIndex > 0 ? inst->getElement(inst->segToWord(headSegIndex - 1)).formid: ConstPosLex::START;
-	pHW = headSegIndex == modSegIndex + 1 ? ConstPosLex::MID : pLP;
-
-	int nHW = headSegIndex < len - 1 ? inst->getElement(inst->segToWord(headSegIndex + 1)).formid : ConstPosLex::END;
-	nHW = headSegIndex == modSegIndex - 1 ? ConstPosLex::MID : nLP;
-
-	int pMW = modSegIndex > 0 ? inst->getElement(inst->segToWord(modSegIndex - 1)).formid : ConstPosLex::START;
-	pMW = modSegIndex == headSegIndex + 1 ? ConstPosLex::MID : pRP;
-
-	int nMW = modSegIndex < len - 1 ? inst->getElement(inst->segToWord(modSegIndex + 1)).formid : ConstPosLex::END;
-	nMW = modSegIndex == headSegIndex - 1 ? ConstPosLex::MID : nRP;
-
-	code = fe->genCodeWF(Arc::pHW, pHW);
-	addCode(TemplateType::TArc, code, fv);
-	addCode(TemplateType::TArc, code | distFlag, fv);
-
-	code = fe->genCodeWF(Arc::nHW, nHW);
-	addCode(TemplateType::TArc, code, fv);
-	addCode(TemplateType::TArc, code | distFlag, fv);
-
-	code = fe->genCodeWF(Arc::pMW, pMW);
-	addCode(TemplateType::TArc, code | distFlag, fv);
-
-	code = fe->genCodeWF(Arc::MW, MW);
-	addCode(TemplateType::TArc, code | distFlag, fv);
-
-	code = fe->genCodeWF(Arc::nMW, nMW);
-	addCode(TemplateType::TArc, code | distFlag, fv);
-*/
 
 	int flagVerb = 0x1;
 	int flagCoord = 0x2;
@@ -1127,57 +946,6 @@ void DependencyPipe::createTripsFeatureVector(DependencyInstance* inst,
 	code = fe->genCodePPPWF(SecondOrder::HC_SC_ML_nMC, HC, SC, nMC, ML);
 	addCode(TemplateType::TSecondOrder, code, fv);
 	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	// large
-	/*
-	code = fe->genCodePPPPPF(SecondOrder::HC_MC_SC_pHC_pMC, HC, MC, SC, pHC, pMC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::HC_MC_SC_pHC_pSC, HC, MC, SC, pHC, pSC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::HC_MC_SC_pMC_pSC, HC, MC, SC, pMC, pSC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::HC_MC_SC_nHC_nMC, HC, MC, SC, nHC, nMC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::HC_MC_SC_nHC_nSC, HC, MC, SC, nHC, nSC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::HC_MC_SC_nMC_nSC, HC, MC, SC, nMC, nSC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::HC_MC_SC_pHC_nMC, HC, MC, SC, pHC, nMC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::HC_MC_SC_pHC_nSC, HC, MC, SC, pHC, nSC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::HC_MC_SC_pMC_nSC, HC, MC, SC, pMC, nSC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::HC_MC_SC_nHC_pMC, HC, MC, SC, nHC, pMC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::HC_MC_SC_nHC_pSC, HC, MC, SC, nHC, pSC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::HC_MC_SC_nMC_pSC, HC, MC, SC, nMC, pSC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-	*/
 }
 
 void DependencyPipe::createSibsFeatureVector(DependencyInstance* inst,
@@ -1382,57 +1150,6 @@ void DependencyPipe::createGPCFeatureVector(DependencyInstance* inst,
 	addCode(TemplateType::TSecondOrder, code, fv);
 	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
 
-	// large
-	/*
-	code = fe->genCodePPPPPF(SecondOrder::GC_HC_MC_pGC_pHC, GC, HC, MC, pGC, pHC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::GC_HC_MC_pGC_pMC, GC, HC, MC , pGC, pMC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::GC_HC_MC_pHC_pMC, GC, HC, MC, pHC, pMC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::GC_HC_MC_nGC_nHC, GC, HC, MC, nGC, nHC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::GC_HC_MC_nGC_nMC, GC, HC, MC, nGC, nMC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::GC_HC_MC_nHC_nMC, GC, HC, MC, nHC, nMC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::GC_HC_MC_pGC_nHC, GC, HC, MC, pGC, nHC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::GC_HC_MC_pGC_nMC, GC, HC, MC, pGC, nMC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::GC_HC_MC_pHC_nMC, GC, HC, MC, pHC, nMC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::GC_HC_MC_nGC_pHC, GC, HC, MC, nGC, pHC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::GC_HC_MC_nGC_pMC, GC, HC, MC, nGC, pMC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-
-	code = fe->genCodePPPPPF(SecondOrder::GC_HC_MC_nHC_pMC, GC, HC, MC, nHC, pMC);
-	addCode(TemplateType::TSecondOrder, code, fv);
-	addCode(TemplateType::TSecondOrder, code | dirFlag, fv);
-	*/
-
 	code = fe->genCodePWWF(ThirdOrder::GL_HL_MC, MC, GL, HL);
 	addCode(TemplateType::TThirdOrder, code, fv);
 	addCode(TemplateType::TThirdOrder, code | dirFlag, fv);
@@ -1595,14 +1312,6 @@ void DependencyPipe::createPos1OFeatureVector(DependencyInstance* inst, HeadInde
 		code = fe->genCodePPF(HighOrder::P_LENGTH, P, min(5, ele.en - ele.st));
 		addCode(TemplateType::THighOrder, code, fv);
 
-		//for (int i = ele.st + 1; i < ele.en; ++i) {
-			//code = fe->genCodePWWF(HighOrder::P_MID_C_pC, P, inst->characterid[i - 1], inst->characterid[i]);
-			//addCode(TemplateType::THighOrder, code, fv);
-
-			//code = fe->genCodePWWF(HighOrder::P_C_C0, P, inst->characterid[ele.st], inst->characterid[i]);
-			//addCode(TemplateType::THighOrder, code, fv);
-		//}
-
 		for (int i = ele.st; i < ele.en; ++i) {
 			code = fe->genCodePWF(HighOrder::P_C0, P, inst->characterid[i]);
 			addCode(TemplateType::THighOrder, code, fv);
@@ -1646,9 +1355,6 @@ void DependencyPipe::createPosHOFeatureVector(DependencyInstance* inst, HeadInde
 	addCode(TemplateType::THighOrder, code, fv);
 
 	if (options->lang == PossibleLang::Chinese) {
-
-		//code = fe->genCodePWWF(HighOrder::pL_P_nL, P, pL, nL);
-		//addCode(TemplateType::THighOrder, code, fv);
 
 		if (ele.st >= 0) {
 			int pC = ele.st > 0 ? inst->characterid[ele.st - 1] : ConstPosLex::START;
@@ -1750,98 +1456,12 @@ void DependencyPipe::createSegFeatureVector(DependencyInstance* inst, int wordid
 		}
 	}
 
-	//code = fe->genCodeWF(HighOrder::W_SEG_PROB, inst->word[wordid].wordid);
-	//addCode(TemplateType::THighOrder, code, segInst.prob, fv);
-
 	if (wordid > 0) {
 		for (int i = 0; i < segInst.size(); ++i) {
 			code = fe->genCodeWF(HighOrder::SEG_W, segInst.element[i].lemmaid);
 			addCode(TemplateType::THighOrder, code, fv);
 		}
-		//for (int i = 0; i < segInst.size() - 1; ++i) {
-		//	code = fe->genCodeWWF(HighOrder::SEG_P2, inst->characterid[segInst.element[i].en - 1], inst->characterid[segInst.element[i + 1].st]);
-		//	addCode(TemplateType::THighOrder, code, fv);
-		//}
 	}
-
-
-/*
-	if (options->lang == PossibleLang::Chinese && wordid > 0) {
-		for (int i = 0; i < segInst.size(); ++i) {
-			SegElement& ele = segInst.element[i];
-			for (int j = ele.st; j < ele.en; ++j) {
-				int label = -1;
-				if (ele.en == ele.st + 1)
-					label = 0;		// S
-				else if (j == ele.st)
-					label = 1;		// B
-				else if (j == ele.en - 1)
-					label = 2;		// E
-				else
-					label = 3;		// M
-
-				int U = inst->characterid[j];
-				int P1 = j > 0 ? inst->characterid[j - 1] : ConstPosLex::START;
-				int P2 = j > 1 ? inst->characterid[j - 2] : ConstPosLex::START;
-				int P3 = j > 2 ? inst->characterid[j - 3] : ConstPosLex::START;
-				int N1 = j < (int)inst->characterid.size() - 1 ? inst->characterid[j + 1] : ConstPosLex::END;
-				int N2 = j < (int)inst->characterid.size() - 2 ? inst->characterid[j + 2] : ConstPosLex::END;
-
-				code = fe->genCodePWF(HighOrder::SEG_P2, label, P2);
-				addCode(TemplateType::THighOrder, code, fv);
-
-				code = fe->genCodePWF(HighOrder::SEG_P1, label, P1);
-				addCode(TemplateType::THighOrder, code, fv);
-
-				code = fe->genCodePWF(HighOrder::SEG_U, label, U);
-				addCode(TemplateType::THighOrder, code, fv);
-
-				code = fe->genCodePWF(HighOrder::SEG_N1, label, N1);
-				addCode(TemplateType::THighOrder, code, fv);
-
-				code = fe->genCodePWF(HighOrder::SEG_N2, label, N2);
-				addCode(TemplateType::THighOrder, code, fv);
-
-				code = fe->genCodePWWF(HighOrder::SEG_P2_P1, label, P2, P1);
-				addCode(TemplateType::THighOrder, code, fv);
-
-				code = fe->genCodePWWF(HighOrder::SEG_P1_U, label, P1, U);
-				addCode(TemplateType::THighOrder, code, fv);
-
-				code = fe->genCodePWWF(HighOrder::SEG_U_N1, label, U, N1);
-				addCode(TemplateType::THighOrder, code, fv);
-
-				code = fe->genCodePWWF(HighOrder::SEG_N1_N2, label, N1, N2);
-				addCode(TemplateType::THighOrder, code, fv);
-
-				code = fe->genCodePPF(HighOrder::SEG_IP2P1, label, P2 == P1 ? 1 : 0);
-				addCode(TemplateType::THighOrder, code, fv);
-
-				code = fe->genCodePPF(HighOrder::SEG_IP1U, label, P1 == U ? 1 : 0);
-				addCode(TemplateType::THighOrder, code, fv);
-
-				code = fe->genCodePPF(HighOrder::SEG_IUN1, label, U == N1 ? 1 : 0);
-				addCode(TemplateType::THighOrder, code, fv);
-
-				code = fe->genCodePPF(HighOrder::SEG_IN1N2, label, N1 == P2 ? 1 : 0);
-				addCode(TemplateType::THighOrder, code, fv);
-
-				code = fe->genCodePPF(HighOrder::SEG_IP3P1, label, P3 == P1 ? 1 : 0);
-				addCode(TemplateType::THighOrder, code, fv);
-
-				code = fe->genCodePPF(HighOrder::SEG_IP2U, label, P2 == U ? 1 : 0);
-				addCode(TemplateType::THighOrder, code, fv);
-
-				code = fe->genCodePPF(HighOrder::SEG_IP1N1, label, P1 == N1 ? 1 : 0);
-				addCode(TemplateType::THighOrder, code, fv);
-
-				code = fe->genCodePPF(HighOrder::SEG_IUN2, label, U == N2 ? 1 : 0);
-				addCode(TemplateType::THighOrder, code, fv);
-
-			}
-		}
-	}
-*/
 }
 
 vector<HeadIndex> DependencyPipe::findConjArg(DependencyInstance* s, HeadIndex& arg) {
@@ -1896,38 +1516,6 @@ void DependencyPipe::createHighOrderFeatureVector(DependencyInstance* inst, Feat
 			SegElement& ele = segInst.element[j];
 			SegElement* headEle = ele.dep.hWord >= 0 ? &inst->getElement(ele.dep) : NULL;
 			HeadIndex m(i, j);
-
-/*
-			int m1 = inst->wordToSeg(m);
-			int h1 = inst->wordToSeg(ele.dep);
-
-			int small = m1 < h1 ? m1 : h1;
-			int large = m1 < h1 ? h1 : m1;
-			bool isProj = true;
-			for (int m2 = small + 1; m2 < large; ++m2) {
-				int h2 = inst->wordToSeg(inst->getElement(inst->segToWord(m2)).dep);
-				if (h2 < small || h2 > large) {
-					isProj = false;
-					break;
-				}
-			}
-
-			if (!isProj) {
-				int MC = ele.getCurrPos();
-				int HC = inst->getElement(ele.dep).getCurrPos();
-				//uint64_t code = fe->genCodePF(HighOrder::NP, 1);
-				//addCode(TemplateType::THighOrder, code, fv);
-
-				//code = fe->genCodePF(HighOrder::NP_MC, MC);
-				//addCode(TemplateType::THighOrder, code, fv);
-
-				//code = fe->genCodePF(HighOrder::NP_HC, HC);
-				//addCode(TemplateType::THighOrder, code, fv);
-
-				uint64_t code = fe->genCodePPF(HighOrder::NP_HC_MC, HC, MC);
-				addCode(TemplateType::THighOrder, code, fv);
-			}
-*/
 
 			if (ele.getCurrSpecialPos() == SpecialPos::C) {
 				// POS tag of CC
@@ -2027,38 +1615,6 @@ void DependencyPipe::createPartialHighOrderFeatureVector(DependencyInstance* ins
 			SegElement& ele = segInst.element[j];
 			SegElement* headEle = ele.dep.hWord >= 0 ? &inst->getElement(ele.dep) : NULL;
 			HeadIndex m(i, j);
-/*
-			// non-proj
-			int m1 = inst->wordToSeg(m);
-			int h1 = inst->wordToSeg(ele.dep);
-
-			int small = m1 < h1 ? m1 : h1;
-			int large = m1 < h1 ? h1 : m1;
-			bool isProj = true;
-			for (int m2 = small + 1; m2 < large; ++m2) {
-				int h2 = inst->wordToSeg(inst->getElement(inst->segToWord(m2)).dep);
-				if (h2 < small || h2 > large) {
-					isProj = false;
-					break;
-				}
-			}
-
-			if (!isProj) {
-				int MC = ele.getCurrPos();
-				int HC = inst->getElement(ele.dep).getCurrPos();
-				//uint64_t code = fe->genCodePF(HighOrder::NP, 1);
-				//addCode(TemplateType::THighOrder, code, fv);
-
-				//code = fe->genCodePF(HighOrder::NP_MC, MC);
-				//addCode(TemplateType::THighOrder, code, fv);
-
-				//code = fe->genCodePF(HighOrder::NP_HC, HC);
-				//addCode(TemplateType::THighOrder, code, fv);
-
-				uint64_t code = fe->genCodePPF(HighOrder::NP_HC_MC, HC, MC);
-				addCode(TemplateType::THighOrder, code, fv);
-			}
-*/
 
 			if (ele.getCurrSpecialPos() == SpecialPos::C) {
 				// POS tag of CC
@@ -2178,38 +1734,6 @@ void DependencyPipe::createPartialPosHighOrderFeatureVector(DependencyInstance* 
 			SegElement& ele = segInst.element[j];
 			SegElement* headEle = ele.dep.hWord >= 0 ? &inst->getElement(ele.dep) : NULL;
 			HeadIndex m(i, j);
-/*
-			// non-proj
-			int m1 = inst->wordToSeg(m);
-			int h1 = inst->wordToSeg(ele.dep);
-
-			int small = m1 < h1 ? m1 : h1;
-			int large = m1 < h1 ? h1 : m1;
-			bool isProj = true;
-			for (int m2 = small + 1; m2 < large; ++m2) {
-				int h2 = inst->wordToSeg(inst->getElement(inst->segToWord(m2)).dep);
-				if (h2 < small || h2 > large) {
-					isProj = false;
-					break;
-				}
-			}
-
-			if (!isProj) {
-				int MC = ele.getCurrPos();
-				int HC = inst->getElement(ele.dep).getCurrPos();
-				//uint64_t code = fe->genCodePF(HighOrder::NP, 1);
-				//addCode(TemplateType::THighOrder, code, fv);
-
-				//code = fe->genCodePF(HighOrder::NP_MC, MC);
-				//addCode(TemplateType::THighOrder, code, fv);
-
-				//code = fe->genCodePF(HighOrder::NP_HC, HC);
-				//addCode(TemplateType::THighOrder, code, fv);
-
-				uint64_t code = fe->genCodePPF(HighOrder::NP_HC_MC, HC, MC);
-				addCode(TemplateType::THighOrder, code, fv);
-			}
-*/
 
 			if (ele.getCurrSpecialPos() == SpecialPos::C) {
 				// POS tag of CC

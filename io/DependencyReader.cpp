@@ -20,7 +20,7 @@ DependencyReader::DependencyReader(Options* options, string file) : options(opti
 	startReading(file);
 }
 
-DependencyReader::DependencyReader() {
+DependencyReader::DependencyReader() : options(NULL) {
 	hasCandidate = true;
 	isTrain = false;
 }
@@ -106,50 +106,28 @@ void DependencyReader::normalizeProb(WordInstance* word) {
 			assert(sumPosProb > 0.0);
 			for (unsigned int k = 0; k < ele.candPos.size(); ++k) {
 				ele.candProb[k] /= sumPosProb;
-				//if (options->lang != PossibleLang::Arabic) {
-					if (ele.candProb[k] > 1e-6)
-						ele.candProb[k] = log(ele.candProb[k]);
-					else
-						ele.candProb[k] = -1000000;
-				//}
-				//else {
-				//	if (ele.candProb[k] < 1e-6) {
-				//		ele.candProb[k] = -1000000;
-				//	}
-				//}
+				if (ele.candProb[k] > 1e-6)
+					ele.candProb[k] = log(ele.candProb[k]);
+				else
+					ele.candProb[k] = -1000000;
 			}
 		}
 		sumSegProb += word->candSeg[i].prob;
-
-		//if (i > 0) {
-		//	assert(word->candSeg[i - 1].prob >= word->candSeg[i].prob);
-		//}
 	}
 
 	assert(sumSegProb > 0.0);
 	for (unsigned int i = 0; i < word->candSeg.size(); ++i) {
 		word->candSeg[i].prob /= sumSegProb;
-		//if (options->lang != PossibleLang::Arabic) {
-			if (word->candSeg[i].prob > 1e-6)
-				word->candSeg[i].prob = log(word->candSeg[i].prob);
-			else
-				word->candSeg[i].prob = -1000000;
-		//}
-		//else {
-		//	if (word->candSeg[i].prob < 1e-6) {
-		//		word->candSeg[i].prob = -1000000;
-		//	}
-		//}
+		if (word->candSeg[i].prob > 1e-6)
+			word->candSeg[i].prob = log(word->candSeg[i].prob);
+		else
+			word->candSeg[i].prob = -1000000;
 	}
 }
 
 void DependencyReader::addGoldSegToCand(WordInstance* word) {
 	// add the gold seg in to seg candidate if not exist (with prob 0)
 	double prob = hasCandidate ? (isTrain ? 0.3 : 0.0) : 1.0;
-
-	//if (options->lang == PossibleLang::Arabic) {
-	//	prob = hasCandidate ? (isTrain ? 0.9 : 0.0) : 1.0;
-	//}
 
 	string goldSegStr = word->goldForm[0];
 	for (unsigned int i = 1; i < word->goldForm.size(); ++i)
@@ -300,12 +278,6 @@ void DependencyReader::addSegCand(WordInstance* word, string str) {
 		segInst.segStr += curr.form;
 	}
 
-	//string wordStr = "";
-	//for (int i = 0; i < segInst.size(); ++i) {
-	//	wordStr += segInst.element[i].form;
-	//}
-	//assert(wordStr == word->wordStr);
-
 	word->candSeg.push_back(move(segInst));
 }
 
@@ -363,7 +335,7 @@ inst_ptr DependencyReader::nextInstance() {
 		string pos = line[3];
 		string morphStr = line[5];
 		HeadIndex head = parseHeadIndex(line[6]);
-		string lab = options->labeled ? line[7] : "<no-type>";
+		string lab = "<no-type>";
 
 		addGoldSegElement(&s->word[id.hWord], word, lemma, pos, morphStr, id.hSeg, head.hWord, head.hSeg, lab);
 		assert((unsigned int)id.hSeg + 1 == s->word[id.hWord].goldForm.size());

@@ -36,133 +36,60 @@ void CacheTable::initCacheTable(int _type, DependencyInstance* inst, PrunerFeatu
 		pruned[i] = true;
 	}
 
-	if (options->heuristicDep) {
+	if (pfe) {
+		//ThrowException("not implemented yet");
 		size = 0;
 		for (int mw = 1; mw < inst->numWord; ++mw) {
 			SegInstance& segInst = inst->word[mw].getCurrSeg();
 
-			assert(segInst.inNode == 0 || segInst.inNode == 1);
-			int modIndex = inst->wordToSeg(mw, segInst.inNode);
+			for (int ms = 0; ms < segInst.size(); ++ms) {
+				int modIndex = inst->wordToSeg(mw, ms);
 
-			if (pfe) {
-				HeadIndex m(mw, segInst.inNode);
+				HeadIndex m(mw, ms);
 				vector<bool> tmpPruned;
 				pfe->prune(inst, m, tmpPruned);
 
 				int p = 0;
 				for (int hw = 0; hw < inst->numWord; ++hw) {
-					if (hw == mw)
-						continue;
-					int headIndex = inst->wordToSeg(hw, inst->word[hw].getCurrSeg().outNode);
-					int pos = headIndex * numSeg + modIndex;
-					if (!tmpPruned[p]) {
-						pruned[pos] = false;
-						arc2id[pos] = size;
-						size++;
-					}
-					p++;
-				}
-				assert(p == (int)tmpPruned.size());
-			}
-			else {
-				// find candidate for the inNode
-				for (int hw = 0; hw < inst->numWord; ++hw) {
-					if (hw == mw)
-						continue;
-					int headIndex = inst->wordToSeg(hw, inst->word[hw].getCurrSeg().outNode);
-					int pos = headIndex * numSeg + modIndex;
-					arc2id[pos] = size;
-					pruned[pos] = false;
-					size++;
-				}
-			}
+					SegInstance& headSeg = inst->word[hw].getCurrSeg();
+					for (int hs = 0; hs < headSeg.size(); ++hs) {
+						if (hw == m.hWord && hs == m.hSeg)
+							continue;
 
-			if (segInst.AlNode == 0) {
-				assert((segInst.size() == 1 && segInst.inNode == 0) || segInst.inNode == 1);
-			}
-
-			// candidate for the rest
-			for (int j = 0; j < segInst.size(); ++j) {
-				if (j == segInst.inNode)
-					continue;
-				modIndex = inst->wordToSeg(mw, j);
-				int headIndex = -1;
-				if (segInst.AlNode != -1 && j == segInst.AlNode) {
-					if (j == segInst.size() - 1)
-						headIndex = inst->wordToSeg(mw, j - 1);
-					else
-						headIndex = inst->wordToSeg(mw, j + 1);
-				}
-				else if (segInst.AlNode != -1 && j == segInst.AlNode + 1) {
-					assert(j >= 2 && segInst.inNode == 0);
-					headIndex = inst->wordToSeg(mw, j - 2);
-				}
-				else {
-					headIndex = inst->wordToSeg(mw, j - 1);
-				}
-				int pos = headIndex * numSeg + modIndex;
-				arc2id[pos] = size;
-				pruned[pos] = false;
-				size++;
-			}
-		}
-	}
-	else {
-		if (pfe) {
-			//ThrowException("not implemented yet");
-			size = 0;
-			for (int mw = 1; mw < inst->numWord; ++mw) {
-				SegInstance& segInst = inst->word[mw].getCurrSeg();
-
-				for (int ms = 0; ms < segInst.size(); ++ms) {
-					int modIndex = inst->wordToSeg(mw, ms);
-
-					HeadIndex m(mw, ms);
-					vector<bool> tmpPruned;
-					pfe->prune(inst, m, tmpPruned);
-
-					int p = 0;
-					for (int hw = 0; hw < inst->numWord; ++hw) {
-						SegInstance& headSeg = inst->word[hw].getCurrSeg();
-						for (int hs = 0; hs < headSeg.size(); ++hs) {
-							if (hw == m.hWord && hs == m.hSeg)
-								continue;
-
-							int headIndex = inst->wordToSeg(hw, hs);
-							int pos = headIndex * numSeg + modIndex;
-							if (!tmpPruned[p]) {
-								pruned[pos] = false;
-								arc2id[pos] = size;
-								size++;
-							}
-							p++;
-						}
-					}
-					assert(p == (int)tmpPruned.size());
-				}
-			}
-		}
-		else {
-			size = 0;
-			for (int mw = 1; mw < inst->numWord; ++mw) {
-				SegInstance& segInst = inst->word[mw].getCurrSeg();
-
-				for (int ms = 0; ms < segInst.size(); ++ms) {
-					int modIndex = inst->wordToSeg(mw, ms);
-
-					HeadIndex m(mw, ms);
-					for (int hw = 0; hw < inst->numWord; ++hw) {
-						SegInstance& headSeg = inst->word[hw].getCurrSeg();
-						for (int hs = 0; hs < headSeg.size(); ++hs) {
-							if (hw == m.hWord && hs == m.hSeg)
-								continue;
-
-							int headIndex = inst->wordToSeg(hw, hs);
-							int pos = headIndex * numSeg + modIndex;
+						int headIndex = inst->wordToSeg(hw, hs);
+						int pos = headIndex * numSeg + modIndex;
+						if (!tmpPruned[p]) {
 							pruned[pos] = false;
 							arc2id[pos] = size;
 							size++;
 						}
+						p++;
+					}
+				}
+				assert(p == (int)tmpPruned.size());
+			}
+		}
+	}
+	else {
+		size = 0;
+		for (int mw = 1; mw < inst->numWord; ++mw) {
+			SegInstance& segInst = inst->word[mw].getCurrSeg();
+
+			for (int ms = 0; ms < segInst.size(); ++ms) {
+				int modIndex = inst->wordToSeg(mw, ms);
+
+				HeadIndex m(mw, ms);
+				for (int hw = 0; hw < inst->numWord; ++hw) {
+					SegInstance& headSeg = inst->word[hw].getCurrSeg();
+					for (int hs = 0; hs < headSeg.size(); ++hs) {
+						if (hw == m.hWord && hs == m.hSeg)
+							continue;
+
+						int headIndex = inst->wordToSeg(hw, hs);
+						int pos = headIndex * numSeg + modIndex;
+						pruned[pos] = false;
+						arc2id[pos] = size;
+						size++;
 					}
 				}
 			}
@@ -224,8 +151,6 @@ void PrunerFeatureExtractor::prune(DependencyInstance* inst, HeadIndex& m, vecto
 	for (int hw = 0; hw < inst->numWord; ++hw) {
 		SegInstance& headSeg = inst->word[hw].getCurrSeg();
 		for (int hs = 0; hs < headSeg.size(); ++hs) {
-			if (options->heuristicDep && (hs != headSeg.outNode || hw == m.hWord))
-				continue;
 			if (hw == m.hWord && hs == m.hSeg)
 				continue;
 
@@ -584,7 +509,6 @@ void FeatureExtractor::getArcFvAtomic(FeatureExtractor* fe, DependencyInstance* 
 		}
 		if (fv) {
 			tmp_ptr = atomic_load(&(cache->arc[pos]));
-			//assert(tmp_ptr->flag == 123);
 			fv->concat(&tmp_ptr->fv);
 		}
 	}
@@ -640,7 +564,6 @@ double FeatureExtractor::getArcScoreAtomic(FeatureExtractor* fe, DependencyInsta
 			getArcFvAtomic(fe, inst, h, m, NULL, cache);
 		}
 		tmp_ptr = atomic_load(&(cache->arc[pos]));
-		//assert(tmp_ptr->flag == 123);
 		score += tmp_ptr->score;
 	}
 	else {
@@ -695,7 +618,6 @@ void FeatureExtractor::getSibsFvAtomic(FeatureExtractor* fe, DependencyInstance*
 		}
 		if (fv) {
 			tmp_ptr = atomic_load(&(cache->sibs[pos]));
-			//assert(tmp_ptr->flag == 123);
 			fv->concat(&tmp_ptr->fv);
 		}
 	}
@@ -741,7 +663,6 @@ double FeatureExtractor::getSibsScoreAtomic(FeatureExtractor* fe, DependencyInst
 			getSibsFvAtomic(fe, inst, ch1, ch2, isSt, NULL, cache);
 		}
 		tmp_ptr = atomic_load(&(cache->sibs[pos]));
-		//assert(tmp_ptr->flag == 123);
 		score += tmp_ptr->score;
 	}
 	else {
@@ -810,7 +731,6 @@ void FeatureExtractor::getTripsFvAtomic(FeatureExtractor* fe, DependencyInstance
 		}
 		if (fv) {
 			tmp_ptr = atomic_load(&(cache->trips[pos]));
-			//assert(tmp_ptr->flag == 123);
 			fv->concat(&tmp_ptr->fv);
 		}
 	}
@@ -939,7 +859,6 @@ void FeatureExtractor::getGPCFvAtomic(FeatureExtractor* fe, DependencyInstance* 
 		}
 		if (fv) {
 			tmp_ptr = atomic_load(&(cache->gpc[pos]));
-			//assert(tmp_ptr->flag == 123);
 			fv->concat(&tmp_ptr->fv);
 		}
 	}
@@ -999,7 +918,6 @@ double FeatureExtractor::getGPCScoreAtomic(FeatureExtractor* fe, DependencyInsta
 			getGPCFvAtomic(fe, inst, gp, par, c, NULL, cache);
 		}
 		tmp_ptr = atomic_load(&(cache->gpc[pos]));
-		//assert(tmp_ptr->flag == 123);
 		score += tmp_ptr->score;
 	}
 	else {
@@ -1044,7 +962,6 @@ void FeatureExtractor::getPosHOFvAtomic(FeatureExtractor* fe, DependencyInstance
 		}
 		if (fv) {
 			tmp_ptr = atomic_load(&(cache->posho[pos]));
-			//assert(tmp_ptr->flag == 123);
 			fv->concat(&tmp_ptr->fv);
 		}
 	}
@@ -1082,7 +999,6 @@ double FeatureExtractor::getPosHOScoreAtomic(FeatureExtractor* fe, DependencyIns
 			getPosHOFvAtomic(fe, inst, m, NULL, cache);
 		}
 		tmp_ptr = atomic_load(&(cache->posho[pos]));
-		//assert(tmp_ptr->flag == 123);
 		score = tmp_ptr->score;
 	}
 	else {
@@ -1463,8 +1379,6 @@ void FeatureExtractor::getPartialFv(DependencyInstance* s, HeadIndex& x, Feature
 
 	HeadIndex& h = s->getElement(x).dep;
 	getArcFv(this, s, h, x, fv, cache);
-
-	//getSegPosFv(this, s, fv, cache);
 }
 
 void FeatureExtractor::getFv(DependencyInstance* s, FeatureVector* fv) {
@@ -1552,116 +1466,38 @@ vector<bool> FeatureExtractor::isPruned(DependencyInstance* s, HeadIndex& m, Cac
 		assert(id == cache->numSeg);
 	}
 	else {
-		if (options->heuristicDep) {
-			if (m.hSeg == s->word[m.hWord].getCurrSeg().inNode) {
-				if (pfe) {
-					vector<bool> tmpPruned;
-					pfe->prune(s, m, tmpPruned);
+		if (pruner) {
+			//ThrowException("isPruned: not implemented yet");
+			vector<bool> tmpPruned;
+			pfe->prune(s, m, tmpPruned);
 
-					int p = 0;
-					for (int hw = 0; hw < s->numWord; ++hw) {
-						SegInstance& headSeg = s->word[hw].getCurrSeg();
-						for (int hs = 0; hs < headSeg.size(); ++hs) {
-							if (hw != m.hWord && hs == headSeg.outNode) {
-								if (!tmpPruned[p]) {
-									pruned.push_back(false);
-								}
-								else {
-									pruned.push_back(true);
-								}
-								p++;
-
-							}
-							else {
-								pruned.push_back(true);
-							}
-						}
-					}
-				}
-				else {
-					// arc between words
-					for (int hw = 0; hw < s->numWord; ++hw) {
-						SegInstance& headSeg = s->word[hw].getCurrSeg();
-						for (int hs = 0; hs < headSeg.size(); ++hs) {
-							if (hw != m.hWord && hs == headSeg.outNode) {
-								pruned.push_back(false);
-							}
-							else {
-								pruned.push_back(true);
-							}
-						}
-					}
-				}
-
-				assert((int)pruned.size() == s->getNumSeg());
-			}
-			else {
-				// arc in word
-				int heuristicHead = -1;
-				SegInstance& segInst = s->word[m.hWord].getCurrSeg();
-				if (segInst.AlNode != -1 && m.hSeg == segInst.AlNode) {
-					if (m.hSeg == segInst.size() - 1)
-						heuristicHead = m.hSeg - 1;
-					else
-						heuristicHead = m.hSeg + 1;
-				}
-				else if (segInst.AlNode != -1 && m.hSeg == segInst.AlNode + 1) {
-					assert(m.hSeg >= 2 && segInst.inNode == 0);
-					heuristicHead = m.hSeg - 2;
-				}
-				else {
-					heuristicHead = m.hSeg - 1;
-				}
-				assert(heuristicHead >= 0);
-
-				for (int hw = 0; hw < s->numWord; ++hw) {
-					SegInstance& headSeg = s->word[hw].getCurrSeg();
-					for (int hs = 0; hs < headSeg.size(); ++hs) {
-						if (hw == m.hWord && hs == heuristicHead) {
+			int p = 0;
+			for (int hw = 0; hw < s->numWord; ++hw) {
+				SegInstance& headSeg = s->word[hw].getCurrSeg();
+				for (int hs = 0; hs < headSeg.size(); ++hs) {
+					if (hw != m.hWord || hs != m.hSeg) {
+						if (!tmpPruned[p]) {
 							pruned.push_back(false);
 						}
 						else {
 							pruned.push_back(true);
 						}
+						p++;
+					}
+					else {
+						pruned.push_back(true);
 					}
 				}
-				assert((int)pruned.size() == s->getNumSeg());
 			}
 		}
 		else {
-			if (pruner) {
-				//ThrowException("isPruned: not implemented yet");
-				vector<bool> tmpPruned;
-				pfe->prune(s, m, tmpPruned);
-
-				int p = 0;
-				for (int hw = 0; hw < s->numWord; ++hw) {
-					SegInstance& headSeg = s->word[hw].getCurrSeg();
-					for (int hs = 0; hs < headSeg.size(); ++hs) {
-						if (hw != m.hWord || hs != m.hSeg) {
-							if (!tmpPruned[p]) {
-								pruned.push_back(false);
-							}
-							else {
-								pruned.push_back(true);
-							}
-							p++;
-						}
-						else {
-							pruned.push_back(true);
-						}
-					}
-				}
-			}
-			else {
-				for (int hw = 0; hw < s->numWord; ++hw) {
-					SegInstance& headSeg = s->word[hw].getCurrSeg();
-					for (int hs= 0; hs < headSeg.size(); ++hs) {
-						if (hw != m.hWord || hs != m.hSeg)
-							pruned.push_back(false);
-						else
-							pruned.push_back(true);
-					}
+			for (int hw = 0; hw < s->numWord; ++hw) {
+				SegInstance& headSeg = s->word[hw].getCurrSeg();
+				for (int hs= 0; hs < headSeg.size(); ++hs) {
+					if (hw != m.hWord || hs != m.hSeg)
+						pruned.push_back(false);
+					else
+						pruned.push_back(true);
 				}
 			}
 		}

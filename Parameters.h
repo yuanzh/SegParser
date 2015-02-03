@@ -22,7 +22,6 @@ class FeatureExtractor;
 
 class Parameters {
 public:
-	//vector<double> tmpParams;
 	vector<double> parameters;
 	vector<double> total;
 	int size;

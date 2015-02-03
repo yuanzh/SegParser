@@ -18,8 +18,7 @@ using namespace std;
 
 struct DecodingMode {
 	enum types {
-		SampleRank = 0,
-		HillClimb,
+		HillClimb = 0,
 		Exact,
 	};
 };

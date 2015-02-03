@@ -18,8 +18,7 @@ void* work(void* threadid);
 void* outputThreadFunc(void* instance);
 void* decodeThreadFunc(void* instance);
 
-DevelopmentThread::DevelopmentThread() {
-	isDevTesting = false;
+DevelopmentThread::DevelopmentThread() : isDevTesting(false) {
 }
 
 DevelopmentThread::~DevelopmentThread() {
@@ -84,7 +83,6 @@ void* decodeThreadFunc(void* instance) {
 	DependencyDecoder* decoder = DependencyDecoder::createDependencyDecoder(inst->options, inst->options->testingMode, inst->options->devThread, false);
 
 	decoder->initialize();
-	decoder->failTime = 0;
 
 	while(true) {
 		inst_ptr pred;
@@ -132,11 +130,7 @@ void* decodeThreadFunc(void* instance) {
 		inst->evaluate(pred.get(), &gold);
 
 		pthread_mutex_unlock( &inst->finishMutex );
-
-		cout << "finish decode " << currProcessID << endl;
 	}
-
-	cout << "Fail time: " << decoder->failTime << endl;
 
 	decoder->shutdown();
 	delete decoder;
@@ -213,13 +207,13 @@ void* work(void* instance) {
 	cout << "Seg Acc: " << inst->corrWordSegNum / inst->wordNum << endl;
 	double segpre = inst->corrSegNum / inst->predSegNum;
 	double segrec = inst->corrSegNum / inst->goldSegNum;
-	cout << "Seg pre/rec/f1: " << segpre << " " << segrec << " " << (2 * segpre * segrec) / (segpre + segrec) << " " << inst->predSegNum << " " << inst->goldSegNum << endl;
+	cout << "Seg pre/rec/f1: " << segpre << " " << segrec << " " << (2 * segpre * segrec) / (segpre + segrec) << endl;
 	double pospre = inst->corrPosNum / inst->predSegNum;
 	double posrec = inst->corrPosNum / inst->goldSegNum;
-	cout << "Pos pre/rec/f1: " << pospre << " " << posrec << " " << (2 * pospre * posrec) / (pospre + posrec) << " " << inst->predSegNum << " " << inst->goldSegNum << endl;
+	cout << "Pos pre/rec/f1: " << pospre << " " << posrec << " " << (2 * pospre * posrec) / (pospre + posrec) << endl;
 	double deppre = inst->corrDepNum / inst->predDepNum;
 	double deprec = inst->corrDepNum / inst->goldDepNum;
-	cout << "Dep pre/rec/f1: " << deppre << " " << deprec << " " << (2 * deppre * deprec) / (deppre + deprec) << " " << inst->predDepNum << " " << inst->goldDepNum << endl;
+	cout << "Dep pre/rec/f1: " << deppre << " " << deprec << " " << (2 * deppre * deprec) / (deppre + deprec) << endl;
 	cout << endl;
 
 	if (inst->options->useTedEval) {
@@ -424,18 +418,6 @@ void DevelopmentThread::evaluate(DependencyInstance* inst, DependencyInstance* g
 		}
 	}
 
-	//score
-	/*
-	FeatureVector fv;
-	sp->pipe->createFeatureVector(inst, &fv);
-	double predScore = sp->devParams->getScore(&fv);
-
-	gold->fv.clear();
-	sp->pipe->createFeatureVector(gold, &gold->fv);
-	double goldScore = sp->devParams->getScore(&gold->fv);
-
-	cout << "ccc: pred score: " << predScore << "; goldScore: " << goldScore << " " << (predScore >= goldScore - 1e-6 ? 1 : 0) << endl;
-	*/
 }
 
 string DevelopmentThread::normalize(string form) {
@@ -570,7 +552,7 @@ double DevelopmentThread::computeTedEval() {
 
 	// run command
 	{
-		string cmd = "sh ../../../tedeval/TedWrappers_20131015/tedeval_seg.sh";
+		string cmd = "sh ../TedWrappers_20131015/tedeval_seg.sh";
 		cmd += " -s " + devoutfile + ".tree" + " -P " + devoutfile + ".seg";
 		cmd += " -g " + devfile + ".tree" + " -G " + devfile + ".seg";
 		//cmd += " &> " + devfile + ".tedeval_log";

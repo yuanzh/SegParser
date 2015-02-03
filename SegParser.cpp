@@ -16,120 +16,6 @@
 
 namespace segparser {
 
-void* testFunc(void* instance) {
-	cout << "lalala" << endl;
-
-	Random r(0);
-	SegParser* sp = (SegParser*)instance;
-
-	for (int i = 0; i < 300000; ++i) {
-		//sp->a = a;
-		//assert(sp->a->a == 2);
-
-		int x = r.nextInt(100);
-		int y = r.nextInt(100);
-		int id = x * 100 + y;
-
-		//int score = -1;
-		test_ptr ptr = atomic_load(&(*sp->ptr)[id]);
-
-		if (!ptr) {
-			//ptr = test_ptr();
-			//TestClass* y = new TestClass();
-			//assert(y->a == 2);
-			//pthread_mutex_lock(&sp->mutex);
-			//(*sp->ptr)[id].reset(y);
-			ptr = test_ptr(new TestClass());
-			atomic_store(&(*sp->ptr)[id], ptr);
-			//assert(((TestClass*)(*sp->ptr)[id].get())->a == 2);
-			//pthread_mutex_unlock(&sp->mutex);
-		}
-
-		ptr = atomic_load(&(*sp->ptr)[id]);
-		TestClass* tmp2 = ptr.get();
-
-		if (tmp2->a != 2) {
-			cout << tmp2->a << endl;
-		}
-		//assert(2 == tmp2->a);
-
-	}
-
-	pthread_exit(NULL);
-	return NULL;
-}
-
-double getValue() {
-	cout << "klalal" << endl;
-	return 1.0;
-}
-
-void test1() {
-	vector<test_ptr> ptr;
-	//multi_array<TestClass*, 2> ptr;
-	//multi_array<int, 2> score;
-/*
-	ptr.resize(10000, test_ptr((TestClass*)NULL));
-	//score.resize(extents[100][100]);
-
-	pthread_t thread[10];
-	SegParser* sp = new SegParser();
-	sp->ptr = &ptr;
-	//sp->score = &score;
-
-	for (int i = 0; i < 10; ++i) {
-		int rc = pthread_create(&thread[i], NULL, testFunc, (void*)sp);
-		if (rc) {
-			cout << i << " " << rc << " " << "Create train thread failed." << endl;
-			exit(0);
-		}
-	}
-
-	for (int i = 0; i < 10; ++i) {
-		// wait thread
-		pthread_join(thread[i], NULL);
-	}
-	*/
-
-	/*
-	test_ptr p1 = test_ptr(new TestClass());
-	test_ptr p2 = p1;
-	p1 = test_ptr(new TestClass());
-	cout << p1.use_count() << " " << p2.use_count() << endl;
-
-	TestClass* a = new TestClass();
-	TestClass b;
-	a->a = 3;
-	b = *a;
-	a->a = 2;
-	*a = b;
-	cout << a->a << endl;
-
-	bool flag = a->a != 3;
-	double value = flag ? 0.0 : getValue();
-	cout << value << endl;
-	*/
-
-	wstring str;
-	wifstream wfin("test.txt");
-	cout << wfin.good() << endl;
-	getline(wfin, str);
-	wcout << str << endl;
-	cout << str.length() << endl;
-}
-
-vector<double> evaluate(string act_file, string pred_file, Options* options) {
-	// TODO: evaluation
-
-	vector<double> ret(2);
-
-	ret[0] = 0.0;
-	ret[1] = 0.0;
-
-	return ret;
-
-}
-
 SegParser::SegParser(DependencyPipe* pipe, Options* options)
 	: pipe(pipe), options(options) {
 	// Set up arrays
@@ -164,7 +50,6 @@ SegParser::~SegParser() {
 void SegParser::train(vector<inst_ptr>& il) {
 
 	cout << "About to train" << endl;
-	//cout << "Num Feats: " << pipe->dataAlphabet->size() - 1 << endl;
 
 	devTimes = 0;
 
@@ -203,20 +88,13 @@ void SegParser::train(vector<inst_ptr>& il) {
 
 void SegParser::trainingIter(vector<inst_ptr>& goldList, vector<inst_ptr>& predList, int iter) {
 
-	int totalWordNum = 0;
-	int correctSegNum = 0;
-	int totalSegNum = 0;
-	int correctDepNum = 0;
-
-	decoder->failTime = 0;
-	decoder->sampleTime = 0.0;
-	decoder->climbTime = 0.0;
+	Timer timer;
 
 	for(unsigned int i = 0; i < goldList.size(); ++i) {
-		if((i+1) % 50 == 0) {
-			cout << "  " << (i+1) <<
-					" (T_s=" << (int)(decoder->sampleTime / 1000) << "s, " <<
-					" T_c=" << (int)(decoder->climbTime / 1000) << "s)";
+		if((i+1) % 100 == 0) {
+			cout << "  " << (i+1);
+			double diff = timer.stop();
+			cout << " (time=" << (int)(diff / 1000) << "s)";
 			cout.flush();
 		}
 
@@ -227,39 +105,9 @@ void SegParser::trainingIter(vector<inst_ptr>& goldList, vector<inst_ptr>& predL
 
 		string str;
 
-		//if (pred->numWord - 1 > options->maxLength)
-		//	continue;
-
-		//gold->fv.clear();
-		//pipe->createFeatureVector(gold.get(), &gold->fv);
 		assert(gold->fv.binaryIndex.size() > 0);
 
 		decoder->train(gold.get(), pred.get(), &fe, iter);
-
-		// train accuracy
-		totalWordNum += gold->numWord - 1;
-		bool allSegCorrect = true;
-		for (int j = 1; j < pred->numWord; j++) {
-			if (pred->word[j].currSegCandID == gold->word[j].currSegCandID) {
-				correctSegNum++;
-			}
-			else {
-				allSegCorrect = false;
-			}
-		}
-		if (allSegCorrect) {
-			for (int j = 1; j < pred->numWord; j++) {
-				SegInstance& gsi = gold->word[j].getCurrSeg();
-				SegInstance& psi = pred->word[j].getCurrSeg();
-
-				totalSegNum += gsi.size();
-				for (int k = 0; k < gsi.size(); k++) {
-					if (gsi.element[k].dep == psi.element[k].dep) {
-						correctDepNum++;
-					}
-				}
-			}
-		}
 
 		if (options->useSP) {
 			uint64_t code = pipe->fe->genCodePF(HighOrder::SEG_PROB, 0);
@@ -274,14 +122,9 @@ void SegParser::trainingIter(vector<inst_ptr>& goldList, vector<inst_ptr>& predL
 	cout << endl;
 
 	cout << "  " << goldList.size() << " instances" << endl;
-	cout << "Training seg accuracy: " << (double)correctSegNum / totalWordNum << endl;
-	cout << "Training dep accuracy: " << (double)correctDepNum / totalSegNum << endl;
-	cout << "Fail time: " << decoder->failTime << endl;
 
 	if (options->test)
 		checkDevStatus(iter);
-
-	//resetParams();
 }
 
 void SegParser::resetParams() {
@@ -311,28 +154,6 @@ void SegParser::checkDevStatus(int iter) {
 		cout << "build dev params" << endl;
 		devParams->copyParams(parameters);
 		devParams->averageParams(decoder->getUpdateTimes());
-
-		if (options->useHO){
-			// check non proj weight
-			uint64_t code = pipe->fe->genCodePF(HighOrder::NP, 1);
-			int index = pipe->dataAlphabet->lookupIndex(TemplateType::THighOrder, code, false);
-			//assert(index > 0);
-			cout << "proj weight: " << parameters->parameters[index] << endl;
-		}
-
-		if (options->useSP) {
-			uint64_t code = pipe->fe->genCodePF(HighOrder::SEG_PROB, 0);
-			int index = pipe->dataAlphabet->lookupIndex(TemplateType::THighOrder, code, false);
-			//assert(index > 0);
-			cout << "seg weight: " << parameters->parameters[index] << endl;
-			cout << "dev seg weight: " << devParams->parameters[index] << endl;
-
-			code = pipe->fe->genCodePF(HighOrder::POS_PROB, 1);
-			index = pipe->dataAlphabet->lookupIndex(TemplateType::THighOrder, code, false);
-			//assert(index > 0);
-			cout << "pos weight: " << parameters->parameters[index] << endl;
-			cout << "dev pos weight: " << devParams->parameters[index] << endl;
-		}
 
 	    cout << "start new dev " << devTimes << endl;
 		dt->start(devfile, devoutfile, this, false);
@@ -387,36 +208,7 @@ void SegParser::loadModel(string file) {
 
 	parameters->total.clear();
 	parameters->total.resize(parameters->parameters.size());
-	//parameters->tmpParams.clear();
-	//parameters->tmpParams.resize(parameters->parameters.size());
 	parameters->size = parameters->parameters.size();
-
-	if (options->useSP) {
-		uint64_t code = pipe->fe->genCodePF(HighOrder::SEG_PROB, 0);
-		int index = pipe->dataAlphabet->lookupIndex(TemplateType::THighOrder, code, false);
-		cout << "seg weight: " << parameters->parameters[index] << endl;
-
-		code = pipe->fe->genCodePF(HighOrder::POS_PROB, 1);
-		index = pipe->dataAlphabet->lookupIndex(TemplateType::THighOrder, code, false);
-		//assert(index > 0);
-		cout << "pos weight: " << parameters->parameters[index] << endl;
-	}
-/*
-	set<int> usedTemp;
-	long mask = 1;
-	mask = (mask << pipe->fe->tempOff) - 1;
-	for (unordered_map<uint64_t, int>::iterator it = pipe->dataAlphabet->highOrderMap.begin(); it != pipe->dataAlphabet->highOrderMap.end(); ++it) {
-		int temp = it->first & mask;
-		usedTemp.insert(temp);
-	}
-
-	for (set<int>::iterator it = usedTemp.begin(); it != usedTemp.end(); ++it) {
-		cout << *it << " ";
-	}
-	cout << endl;
-	int x;
-	cin >> x;
-	*/
 }
 
 void SegParser::evaluatePruning() {
@@ -504,17 +296,6 @@ int main(int argc, char** argv) {
 
 			prunerPipe.loadCoarseMap(prunerOptions.trainFile);
 
-/*
-			pruner = new SegParser(&prunerPipe, &prunerOptions);
-			pruner->pruner = NULL;
-			pruner->loadModel(options.modelName + ".pruner");
-
-			int numFeats = prunerPipe.dataAlphabet->size() - 1;
-			int numTypes = prunerPipe.typeAlphabet->size() - 1;
-			cout << "Pruner Num Feats: " << numFeats << endl;
-			cout << "Pruner Num Edge Labels: " << numTypes << endl;
-*/
-
 			vector<inst_ptr> trainingData = prunerPipe.createInstances(prunerOptions.trainFile);
 
 			pruner = new SegParser(&prunerPipe, &prunerOptions);
@@ -543,23 +324,12 @@ int main(int argc, char** argv) {
 	    SegParser sp(&pipe, &options);
 	    sp.pruner = pruner;
 
-	    //sp.loadModel(options.modelName + ".train");
-
 	    int numFeats = pipe.dataAlphabet->size() - 1;
 	    int numTypes = pipe.typeAlphabet->size() - 1;
 	    cout << "Num Feats: " << numFeats << endl;
 	    cout << "Num Edge Labels: " << numTypes << endl;
 
 	    sp.train(trainingData);
-
-	    //cout << "Saving model ... ";
-	    //cout.flush();
-	    //if (sp.pruner) {
-	    //	sp.pruner->saveModel(options.modelName + ".pruner", sp.pruner->parameters);
-	    //}
-	    //sp.saveModel(options.modelName, sp.parameters);
-	    //sp.closeDecoder();
-	    //cout << "done." << endl;
 
 	}
 
@@ -607,11 +377,6 @@ int main(int argc, char** argv) {
 	    pthread_join(testSp.dt->workThread, NULL);
 	    testSp.closeDecoder();
 	}
-
-    //if(options.eval) {
-	 //   cout << "\nEVALUATION PERFORMANCE:" << endl;
-	  //  evaluate(options.testFile, options.outFile, &options);
-	//}
 
 	return 0;
 }

@@ -14,8 +14,7 @@
 
 namespace segparser {
 
-DependencyInstance::DependencyInstance() {
-	numWord = -1;
+DependencyInstance::DependencyInstance() : numWord(-1) {
 }
 
 DependencyInstance::~DependencyInstance() {
@@ -167,7 +166,6 @@ void DependencyInstance::setInstIds(DependencyPipe* pipe, Options* options) {
 	Alphabet* typeAlphabet = pipe->typeAlphabet;
 	Alphabet* posAlphabet = pipe->posAlphabet;
 	Alphabet* lexAlphabet = pipe->lexAlphabet;
-	unordered_set<string>& suffixList = pipe->suffixList;
 	unordered_map<string, string>& coarseMap = pipe->coarseMap;
 
 	if (options->lang == PossibleLang::Chinese) {
@@ -210,20 +208,6 @@ void DependencyInstance::setInstIds(DependencyPipe* pipe, Options* options) {
 			}
 			len += off;
 
-			// build in/out map
-			/*
-			if (currWord.candSeg.size() > 1) {
-				int size = currWord.candSeg.size();
-				currWord.inMap.resize(size * size);
-				currWord.outMap.resize(size * size);
-				for (int a = 0; a < size; ++a) {
-					for (int b = 0; b < size; ++b) {
-						currWord.inMap[a * size + b] = buildInMap(currWord, a, b);
-						currWord.outMap[a * size + b] = buildOutMap(currWord, a, b);
-					}
-				}
-			}
-			*/
 		}
 		assert(len == (int)characterid.size());
 	}
@@ -278,39 +262,12 @@ void DependencyInstance::setInstIds(DependencyPipe* pipe, Options* options) {
 							ele.candSpecialPos[l] = SpecialPos::OTHER;
 					}
 					else {
-						ele.candSpecialPos[l] = SpecialPos::OTHER;
+						if (isPunc(ele.form) || (options->lang == PossibleLang::Chinese && ele.candPos[l] == "PU"))
+							ele.candSpecialPos[l] = SpecialPos::PNX;
+						else
+							ele.candSpecialPos[l] = SpecialPos::OTHER;
 					}
 				}
-			}
-
-			// heuristic rule to decide in/out node, first non-Al node is in node, last non-suffix node is out node, dep is right branching
-			if (options->heuristicDep) {
-				seg.AlNode = -1;
-				for (int k = 0; k < seg.size(); ++k)
-					if (seg.element[k].form == "Al") {
-						assert(seg.AlNode == -1);
-						seg.AlNode = k;
-					}
-				if (seg.element[0].form == "Al") {
-					if (seg.size() == 1)
-						seg.inNode = 0;
-					else
-						seg.inNode = 1;
-				} else {
-					seg.inNode = 0;
-				}
-				seg.outNode = seg.size() - 1;
-				for (; seg.outNode >= 0; seg.outNode--) {
-					if (suffixList.find(seg.element[seg.outNode].form) == suffixList.end())
-						break;
-				}
-				if (seg.outNode < 0)
-					seg.outNode = 0;
-			}
-			else {
-				seg.inNode = -1;
-				seg.outNode = -1;
-				seg.AlNode = -1;
 			}
 		}
 	}
@@ -325,9 +282,6 @@ int DependencyInstance::segDist(HeadIndex& head, HeadIndex& mod) {
 
 	return largeIndex - smallIndex;
 
-	//int hid = wordToSeg(head);
-	//int mid = wordToSeg(mod);
-	//return hid - mid;
 }
 
 SegElement& DependencyInstance::getElement(int hw, int hs) {

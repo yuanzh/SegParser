@@ -27,18 +27,11 @@ Options::Options() {
 
 	train = false;
 	test = false;
-	eval = false;
 
 	trainPruner = true;
 
-	heuristicDep = false;
-
-	proj = false;
-	labeled = false;
-
 	learningMode = DecodingMode::HillClimb;
 	testingMode = DecodingMode::HillClimb;
-	updateGold = true;
 
 	// parameter
 	numIters = 10;
@@ -63,14 +56,11 @@ Options::Options() {
 
 	trainConvergeIter = 200;
 	testConvergeIter = 200;
-	restartIter = 25;
 
 	evalPunc = true;
 	useTedEval = false;
 	jointSegPos = true;
 	earlyStop = 40;
-
-	addLoss = false;
 
 	saveBestModel = true;
 	bestScore = -100;
@@ -86,9 +76,6 @@ void Options::processArguments(int argc, char** argv) {
 		StringSplit(str, ":", &pair);
 		if(pair[0].compare("train") == 0) {
 			train = true;
-		}
-		if(pair[0].compare("eval") == 0) {
-			eval = true;
 		}
 		if(pair[0].compare("test") == 0) {
 			test = true;
@@ -110,9 +97,6 @@ void Options::processArguments(int argc, char** argv) {
 		if(pair[0].compare("model-name") == 0) {
 			modelName = pair[1];
 		}
- 		if(pair[0].compare("decode-type") == 0) {
-			proj = pair[1].compare("proj") == 0;
-		}
 		if (pair[0].compare("seed") == 0) {
 			seed = atoi(pair[1].c_str());
 		}
@@ -130,9 +114,6 @@ void Options::processArguments(int argc, char** argv) {
 		}
 		if (pair[0].compare("C") == 0) {
 			regC = atof(pair[1].c_str());
-		}
-		if (pair[0].compare("updategold") == 0) {
-			updateGold = pair[1].compare("true") == 0;
 		}
 		if (pair[0].compare("train-converge") == 0) {
 			trainConvergeIter = atoi(pair[1].c_str());
@@ -155,6 +136,8 @@ void Options::processArguments(int argc, char** argv) {
 		if (pair[0].compare("savebest") == 0) {
 			saveBestModel = (pair[1] == "true" ? true : false);
 		}
+
+		//TODO: add useHO option
 	}
 
 
@@ -180,9 +163,6 @@ void Options::setPrunerOptions() {
 	test = false;
 
 	trainPruner = false;
-
-	proj = false;
-	labeled = false;
 
 	learningMode = DecodingMode::Exact;
 	testingMode = DecodingMode::Exact;
@@ -212,21 +192,16 @@ void Options::outputArg() {
 	cout << "model-name: " << modelName << endl;
 	cout << "train: " << train << endl;
 	cout << "test: " << test << endl;
-	cout << "eval: " << eval << endl;
 	cout << "training-iterations: " << numIters << endl;
-	cout << "proj: " << proj << endl;
 	cout << "seed: " << seed << endl;
 	cout << "use consecutive sibling: " << useCS << endl;
 	cout << "use grandparent: " << useGP << endl;
 	cout << "use grand sibling, tri-sibling and high order: " << useHO << endl;
 	cout << "learning mode: " << learningMode << endl;
 	cout << "testing mode: " << testingMode << endl;
-	cout << "update gold: " << updateGold << endl;
 	cout << "train thread: " << trainThread << endl;
 	cout << "dev thread: " << devThread << endl;
-	cout << "labeled: " << labeled << endl;
 	cout << "reg C: " << regC << endl;
-	cout << "heuristic dep: " << heuristicDep << endl;
 	cout << "train converge iter: " << trainConvergeIter << endl;
 	cout << "test converge iter: " << testConvergeIter << endl;
 	cout << "early stop: " << earlyStop << endl;

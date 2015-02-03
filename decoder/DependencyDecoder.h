@@ -59,18 +59,12 @@ public:
 	int seed;
 	Options* options;
 
-	double thresh;
-
-	int failTime;
-
 	int getBottomUpOrder(DependencyInstance* inst, HeadIndex& arg, vector<HeadIndex>& idx, int id);
 	double sampleSeg1O(DependencyInstance* inst, DependencyInstance* gold, FeatureExtractor* fe, int wordID, Random& r);
 	double samplePos1O(DependencyInstance* inst, DependencyInstance* gold, FeatureExtractor* fe, int wordID, Random& r);
 	bool randomWalkSampler(DependencyInstance* pred, DependencyInstance* gold, FeatureExtractor* fe, CacheTable* cache,
 			vector<bool>& toBeSampled, Random& r, double T);
 
-	double sampleTime;
-	double climbTime;
 protected:
 	int updateTimes;
 

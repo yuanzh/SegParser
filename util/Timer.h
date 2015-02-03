@@ -17,16 +17,12 @@ class Timer {
 public:
 
 	Timer() {
-		//begin = clock();
 		gettimeofday(&begin, NULL);
 	}
 
 	double stop() {
-	    //clock_t end = clock();
 		timeval end;
 		gettimeofday(&end, NULL);
-	    //double diffticks = end - begin;
-	    //double diffms = (diffticks*1000) / CLOCKS_PER_SEC;
 		double diffms = (((end.tv_sec - begin.tv_sec) * 1000000) + (end.tv_usec - begin.tv_usec))/1000;
 	    return diffms;
 	}

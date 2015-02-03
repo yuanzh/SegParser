@@ -7,7 +7,6 @@
 
 #include "DependencyDecoder.h"
 #include "../util/Constant.h"
-#include "SampleRankDecoder.h"
 #include "HillClimbingDecoder.h"
 #include "ClassifierDecoder.h"
 #include "../util/StringUtils.h"
@@ -17,18 +16,13 @@
 namespace segparser {
 
 DependencyDecoder::DependencyDecoder(Options* options) : seed(options->seed), options(options), updateTimes(0) {
-	thresh = 0.01;
 }
 
 DependencyDecoder::~DependencyDecoder() {
 }
 
 DependencyDecoder* DependencyDecoder::createDependencyDecoder(Options* options, int mode, int thread, bool isTrain) {
-	if (DecodingMode::SampleRank == mode) {
-		// sample rank
-		return new SampleRankDecoder(options);
-	}
-	else if (DecodingMode::HillClimb == mode) {
+	if (DecodingMode::HillClimb == mode) {
 		// hill climb
 		if (!isTrain)
 			return new HillClimbingDecoder(options, thread, options->testConvergeIter);
@@ -67,50 +61,16 @@ void DependencyDecoder::initInst(DependencyInstance* inst, FeatureExtractor* fe)
 		WordInstance& word = inst->word[i];
 		SegInstance& segInst = word.getCurrSeg();
 
-		if (options->heuristicDep) {
-			assert(segInst.inNode == 0 || segInst.inNode == 1);
-
-			if (fe->pfe) {
-				segInst.element[segInst.inNode].dep.setIndex(-1, 0);
-				segInst.element[segInst.inNode].labid = ConstLab::NOTYPE;
-			}
-			else {
-				segInst.element[segInst.inNode].dep.setIndex(0, 0);
-				segInst.element[segInst.inNode].labid = ConstLab::NOTYPE;
-			}
-
+		if (fe->pfe) {
 			for (int j = 0; j < segInst.size(); ++j) {
-				if (j == segInst.inNode)
-					continue;
-				if (segInst.AlNode != -1 && j == segInst.AlNode) {
-					if (j == segInst.size() - 1)
-						segInst.element[j].dep.setIndex(i, j - 1);
-					else
-						segInst.element[j].dep.setIndex(i, j + 1);
-				}
-				else if (segInst.AlNode != -1 && j == segInst.AlNode + 1) {
-					assert(j >= 2);
-					segInst.element[j].dep.setIndex(i, j - 2);
-				}
-				else {
-					segInst.element[j].dep.setIndex(i, j - 1);
-				}
+				segInst.element[j].dep.setIndex(-1, 0);
 				segInst.element[j].labid = ConstLab::NOTYPE;
 			}
 		}
 		else {
-			if (fe->pfe) {
-				//ThrowException("initialize: not implemented yet");
-				for (int j = 0; j < segInst.size(); ++j) {
-					segInst.element[j].dep.setIndex(-1, 0);
-					segInst.element[j].labid = ConstLab::NOTYPE;
-				}
-			}
-			else {
-				for (int j = 0; j < segInst.size(); ++j) {
-					segInst.element[j].dep.setIndex(0, 0);
-					segInst.element[j].labid = ConstLab::NOTYPE;
-				}
+			for (int j = 0; j < segInst.size(); ++j) {
+				segInst.element[j].dep.setIndex(0, 0);
+				segInst.element[j].labid = ConstLab::NOTYPE;
 			}
 		}
 	}
@@ -252,126 +212,6 @@ int DependencyDecoder::samplePoint(vector<double>& prob, Random& r) {
 	return ret;
 }
 
-double DependencyDecoder::getSegPosProb(WordInstance& word) {
-	// sample seg first
-	double prob = word.getCurrSeg().prob;
-
-	// sample pos next;
-	SegInstance& segInst = word.getCurrSeg();
-	for (int i = 0; i < segInst.size(); ++i) {
-		SegElement& ele = segInst.element[i];
-		prob *= ele.candProb[ele.currPosCandID];
-	}
-
-	return prob;
-}
-
-double DependencyDecoder::sampleSegPos(DependencyInstance* inst, DependencyInstance* gold, int wordID, Random& r) {
-	WordInstance& word = inst->word[wordID];
-	vector<double> probList(word.candSeg.size());
-	// sample seg first
-	double sumProb = 0.0;
-	for (unsigned int i = 0; i < word.candSeg.size(); ++i) {
-		probList[i] = word.candSeg[i].prob;
-		if (gold) {
-			SegInstance& goldInst = gold->word[wordID].getCurrSeg();
-			double loss = ((int)i != gold->word[wordID].currSegCandID) ?
-					1.5 * 0.5 * (word.candSeg[i].size() + goldInst.size()) : 0;
-			probList[i] *= exp(loss);
-		}
-		sumProb += probList[i];
-	}
-	for (unsigned int i = 0; i < word.candSeg.size(); ++i) {
-		probList[i] /= sumProb;
-	}
-
-	int sample = samplePoint(probList, r);
-	int oldSegID = word.currSegCandID;
-	updateSeg(inst, word, sample);
-	if (oldSegID != sample) {
-		inst->constructConversionList();
-	}
-	double prob = word.getCurrSeg().prob;
-
-	// remove all arcs to this word and build heuristic dep if needed
-	SegInstance& segInst = word.getCurrSeg();
-	for (int i = 0; i < inst->numWord; ++i) {
-		if (i == wordID)
-			continue;
-		SegInstance& tmpSeg = inst->word[i].getCurrSeg();
-		for (int j = 0; j < tmpSeg.size(); ++j)
-			if (tmpSeg.element[j].dep.hWord == wordID) {
-				if (options->heuristicDep) {
-					tmpSeg.element[j].dep.setIndex(wordID, segInst.outNode);
-				}
-				else {
-					tmpSeg.element[j].dep.setIndex(-1, 0);
-				}
-			}
-	}
-
-	// sample pos next;
-	word.optPosCount = 0;
-	for (int i = 0; i < segInst.size(); ++i) {
-		SegElement& ele = segInst.element[i];
-		int sample = -1;
-		if (!gold) {
-			sample = samplePoint(ele.candProb, r);
-		}
-		else {
-			SegInstance& goldInst = gold->word[wordID].getCurrSeg();
-			vector<double> tmp(ele.candPosNum());
-			double sum = 0.0;
-			for (int j = 0; j < ele.candPosNum(); ++j) {
-				double loss = 0.0;
-				if (word.currSegCandID == gold->word[wordID].currSegCandID
-						&& j != goldInst.element[i].currPosCandID) {
-					loss = 1.5;
-				}
-				tmp[j] = ele.candProb[j] * exp(loss);
-				sum += tmp[j];
-			}
-			for (int j = 0; j < ele.candPosNum(); ++j) {
-				tmp[j] /= sum;
-			}
-			sample = samplePoint(tmp, r);
-		}
-		ele.currPosCandID = sample;
-		word.optPosCount += ele.currPosCandID == 0;
-		prob *= ele.candProb[ele.currPosCandID];
-	}
-
-	// set the heuristic dep, can be more efficient
-	if (options->heuristicDep)
-		assert(segInst.inNode == 0 || segInst.inNode == 1);
-	for (int j = 0; j < segInst.size(); ++j) {
-		if (options->heuristicDep) {
-			if (j == segInst.inNode) {
-				segInst.element[j].dep.setIndex(-1, 0);
-				continue;
-			}
-			if (segInst.AlNode != -1 && j == segInst.AlNode) {
-				if (j == segInst.size() - 1)
-					segInst.element[j].dep.setIndex(wordID, j - 1);
-				else
-					segInst.element[j].dep.setIndex(wordID, j + 1);
-			}
-			else if (segInst.AlNode != -1 && j == segInst.AlNode + 1) {
-				assert(j >= 2 && segInst.inNode == 0);
-				segInst.element[j].dep.setIndex(wordID, j - 2);
-			}
-			else {
-				segInst.element[j].dep.setIndex(wordID, j - 1);
-			}
-		}
-		else {
-			segInst.element[j].dep.setIndex(-1, 0);
-		}
-	}
-
-	return prob;
-}
-
 double DependencyDecoder::samplePos1O(DependencyInstance* inst, DependencyInstance* gold, FeatureExtractor* fe, int wordID, Random& r) {
 	WordInstance& word = inst->word[wordID];
 	vector<double> probList(word.candSeg.size());
@@ -390,7 +230,6 @@ double DependencyDecoder::samplePos1O(DependencyInstance* inst, DependencyInstan
 			ele.currPosCandID = j;
 
 			probList[j] = fe->getPos1OScore(inst, m);
-			//probList[j] = ele.candProb[j];
 			FeatureVector tmpfv;
 			fe->pipe->createPosHOFeatureVector(inst, m, true, &tmpfv);
 			probList[j] += fe->parameters->getScore(&tmpfv);
@@ -401,23 +240,16 @@ double DependencyDecoder::samplePos1O(DependencyInstance* inst, DependencyInstan
 
 				if (word.currSegCandID == gold->word[wordID].currSegCandID
 						&& j != goldInst.element[j].currPosCandID) {
-					//loss = 1.5;
 					loss = 1.0;
 				}
 				probList[j] += loss;
 			}
 
-			//if (ele.candProb[j] < -100.0)
-			//	probList[j] = -100.0;
-			//else
-			//probList[j] = 0.0;
 		}
 
-		//if (gold) {
-			for (unsigned int z = 0; z < probList.size(); ++z) {
-				probList[z] *= 0.5;
-			}
-		//}
+		for (unsigned int z = 0; z < probList.size(); ++z) {
+			probList[z] *= 0.5;
+		}
 
 		convertScoreToProb(probList);
 		int sample = samplePoint(probList, r);
@@ -426,32 +258,8 @@ double DependencyDecoder::samplePos1O(DependencyInstance* inst, DependencyInstan
 		prob *= probList[ele.currPosCandID];
 	}
 
-	// set the heuristic dep, can be more efficient
-	if (options->heuristicDep)
-		assert(segInst.inNode == 0 || segInst.inNode == 1);
 	for (int j = 0; j < segInst.size(); ++j) {
-		if (options->heuristicDep) {
-			if (j == segInst.inNode) {
-				segInst.element[j].dep.setIndex(-1, 0);
-				continue;
-			}
-			if (segInst.AlNode != -1 && j == segInst.AlNode) {
-				if (j == segInst.size() - 1)
-					segInst.element[j].dep.setIndex(wordID, j - 1);
-				else
-					segInst.element[j].dep.setIndex(wordID, j + 1);
-			}
-			else if (segInst.AlNode != -1 && j == segInst.AlNode + 1) {
-				assert(j >= 2 && segInst.inNode == 0);
-				segInst.element[j].dep.setIndex(wordID, j - 2);
-			}
-			else {
-				segInst.element[j].dep.setIndex(wordID, j - 1);
-			}
-		}
-		else {
-			segInst.element[j].dep.setIndex(-1, 0);
-		}
+		segInst.element[j].dep.setIndex(-1, 0);
 	}
 	return prob;
 }
@@ -466,29 +274,20 @@ double DependencyDecoder::sampleSeg1O(DependencyInstance* inst, DependencyInstan
 		word.currSegCandID = i;
 
 		probList[i] = fe->getSegScore(inst, wordID);
-		//probList[i] = word.candSeg[i].prob;
 
 		if (gold) {
 			SegInstance& goldInst = gold->word[wordID].getCurrSeg();
 			double loss = ((int)i != gold->word[wordID].currSegCandID) ?
 					1.0 * (word.getCurrSeg().size() + goldInst.size()) : 0.0; // consistent with parameter::wordError
-					//1.0 : 0.0;
 			probList[i] += loss;
 		}
 
-
-		//if (word.candSeg[i].prob < -100.0)
-		//	probList[i] = -100.0;
-		//else
-		//probList[i] = 0.0;
 	}
 	word.currSegCandID = oldSegID;
 
-	//if (gold) {
-		for (unsigned int i = 0; i < probList.size(); ++i) {
-			probList[i] *= 0.5;
-		}
-	//}
+	for (unsigned int i = 0; i < probList.size(); ++i) {
+		probList[i] *= 0.5;
+	}
 
 	convertScoreToProb(probList);
 	int sample = samplePoint(probList, r);
@@ -496,19 +295,13 @@ double DependencyDecoder::sampleSeg1O(DependencyInstance* inst, DependencyInstan
 	double prob = probList[word.currSegCandID];
 
 	// remove all arcs to this word and build heuristic dep if needed
-	SegInstance& segInst = word.getCurrSeg();
 	for (int i = 0; i < inst->numWord; ++i) {
 		if (i == wordID)
 			continue;
 		SegInstance& tmpSeg = inst->word[i].getCurrSeg();
 		for (int j = 0; j < tmpSeg.size(); ++j)
 			if (tmpSeg.element[j].dep.hWord == wordID) {
-				if (options->heuristicDep) {
-					tmpSeg.element[j].dep.setIndex(wordID, segInst.outNode);
-				}
-				else {
-					tmpSeg.element[j].dep.setIndex(-1, 0);
-				}
+				tmpSeg.element[j].dep.setIndex(-1, 0);
 			}
 	}
 
@@ -566,9 +359,6 @@ void DependencyDecoder::getFirstOrderVec(DependencyInstance* inst, DependencyIns
 			if (treeConstraint) {
 				if (isAncestor(inst, m, h))		// loop
 					continue;
-
-				if (options->proj && !isProj(inst, h, m))
-					continue;
 			}
 
 			candH.push_back(h);
@@ -584,78 +374,6 @@ void DependencyDecoder::getFirstOrderVec(DependencyInstance* inst, DependencyIns
 	}
 	assert(segID == (int)isPruned.size() - 1);
 	predSegEle.dep = oldDep;
-}
-
-double DependencyDecoder::getMHDepProb(DependencyInstance* inst, DependencyInstance* gold,
-		FeatureExtractor* fe, int wordID) {
-	double prob = 0.0;
-
-	// get the first-order score for new arcs connecting to a word
-	if (options->heuristicDep) {
-		SegInstance& segInst = inst->word[wordID].getCurrSeg();
-		HeadIndex m(wordID, segInst.inNode);
-		vector<HeadIndex> candH;
-		vector<double> score;
-
-		CacheTable* cache = fe->getCacheTable(inst);
-		getFirstOrderVec(inst, gold, fe, m, cache, true, candH, score);
-		HeadIndex& currH = segInst.element[m.hSeg].dep;
-
-		// compute sum score and dep score
-		double sumScore = -DBL_MAX;
-		double currScore = -DBL_MAX;
-		int currID = -1;
-		for (unsigned int i = 0; i < score.size(); ++i) {
-			if (currH == candH[i]) {
-				currID = i;
-				currScore = score[i];
-			}
-			sumScore = logsumexp(sumScore, score[i]);
-		}
-		assert(currID != -1);
-		prob = exp(currScore - sumScore);
-	}
-	else {
-		ThrowException("get mh dep prob: not implemented yet");
-		// TODO: compute sum of the first-order score via matrix
-	}
-
-	return prob;
-}
-
-double DependencyDecoder::sampleMHDepProb(DependencyInstance* inst, DependencyInstance* gold,
-		FeatureExtractor* fe, int wordID, Random& r) {
-	// NOTE: before buildChild is called, the child list is broken, make sure it is not used until then
-
-	double prob = 0.0;
-
-	// get the first-order score for new arcs connecting to a word
-	if (options->heuristicDep) {
-		// set the heuristic dep, can be more efficient
-		SegInstance& segInst = inst->word[wordID].getCurrSeg();
-
-		// sample the new head
-		HeadIndex m(wordID, segInst.inNode);
-		vector<HeadIndex> candH;
-		vector<double> score;
-
-		CacheTable* cache = fe->getCacheTable(inst);
-		getFirstOrderVec(inst, gold, fe, m, cache, true, candH, score);
-		assert(score.size() > 0);
-		convertScoreToProb(score);
-		int sample = samplePoint(score, r);
-
-		segInst.element[m.hSeg].dep = candH[sample];
-		prob = score[sample];
-
-		//inst->buildChild();		// can be more efficient
-	}
-	else {
-		ThrowException("sample mh dep prob: not implemented yet");
-		// TODO: random walk and  compute sum of the first-order score via matrix
-	}
-
-	return prob;
 }
 
 bool DependencyDecoder::randomWalkSampler(DependencyInstance* pred, DependencyInstance* gold, FeatureExtractor* fe,
@@ -676,9 +394,6 @@ bool DependencyDecoder::randomWalkSampler(DependencyInstance* pred, DependencyIn
 				assert(segInst.element[j].dep.hWord  != -1);
 			}
 			else {
-				if (options->heuristicDep) {
-					assert(j == segInst.inNode);
-				}
 				assert(id == pred->wordToSeg(i, j));
 				segInst.element[j].dep.setIndex(-1, 0);
 			}
@@ -687,7 +402,6 @@ bool DependencyDecoder::randomWalkSampler(DependencyInstance* pred, DependencyIn
 	}
 	assert(id == len);
 
-	//CacheTable* cache = fe->getCacheTable(pred);
 	for (int i = 1; i < pred->numWord; ++i) {
 		SegInstance& segInst = pred->word[i].getCurrSeg();
 
@@ -696,9 +410,7 @@ bool DependencyDecoder::randomWalkSampler(DependencyInstance* pred, DependencyIn
 			int currid = pred->wordToSeg(curr);
 
 			int loop = 0;
-			//vector<HeadIndex> trace;
 			while (!inTree[currid] && loop < 5000) {
-				//trace.push_back(curr);
 				if (toBeSampled[currid]) {
 					vector<HeadIndex> candH;
 					vector<double> score;
@@ -715,33 +427,10 @@ bool DependencyDecoder::randomWalkSampler(DependencyInstance* pred, DependencyIn
 				curr = pred->getElement(curr).dep;
 				currid = pred->wordToSeg(curr);
 
-				//if (pred->getElement(curr).dep.hWord != -1 && toBeSampled[currid] && !inTree[currid]) {
-				//	cycleErase(pred, curr, toBeSampled);
-				//}
 				loop++;
 			}
 			if (loop >= 5000) {
-				//cout << "loop bug 1" << endl;
-				//for (unsigned int z = 0; z < trace.size(); ++z) {
-				//	cout << trace[z] << " ";
-				//}
-				//cout << endl;
-/*
-				HeadIndex root(0, 0);
-				for (int w = 1; w < pred->numWord; ++w) {
-					SegInstance& segInst = pred->word[w].getCurrSeg();
-
-					for (int s = 0; s < segInst.size(); ++s) {
-						HeadIndex m(w, s);
-						cout << m << " " << fe->getArcScore(fe, pred, root, m, cache)
-								<< " " << (segInst.element[s].dep.hWord == -1 ? -10.0 : fe->getArcScore(fe, pred, segInst.element[s].dep, m, cache))
-								<< endl;
-					}
-				}
-
-				pred->output();
-				*/
-				cout << "sample failed T=" << T << endl;
+				//cout << "sample failed T=" << T << endl;
 				return false;
 			}
 			assert(loop < 5000);
