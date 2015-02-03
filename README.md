@@ -36,7 +36,7 @@ Because of the license issue, datasets are not directly released here. You can f
 
 ##### 4. Usage
 
-Take a look at the scripts "run_*.sh" and "run_*_test.sh" where *=spmrl|classical|chinese. For example, to train a model on the SPMRL dataset, you can simply run
+Take a look at the scripts "run_DATA.sh" and "run_DATA_test.sh" where DATA=spmrl|classical|chinese. For example, to train a model on the SPMRL dataset, you can simply run
 
 run_spmrl.sh run1
 
