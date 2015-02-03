@@ -32,7 +32,7 @@ void StringSplit(const string &str,
 void TrimLeft(const string &delim, string *line) {
 	size_t cutAt = line->find_first_not_of(delim);
 	if (cutAt == line->npos) {
-		*line == "";
+		*line = "";
 	} else {
 		*line = line->substr(cutAt);
 	}
@@ -43,7 +43,7 @@ void TrimLeft(const string &delim, string *line) {
 void TrimRight(const string &delim, string *line) {
 	size_t cutAt = line->find_last_not_of(delim);
 	if (cutAt == line->npos) {
-		*line == "";
+		*line = "";
 	} else {
 		*line = line->substr(0, cutAt+1);
 	}
