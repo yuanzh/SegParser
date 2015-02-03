@@ -1,0 +1,83 @@
+CONFIGURATION
+Configuration name:   pproj_24934
+Configuration type:   pseudo
+Created:              Fri Sep 05 22:19:36 EDT 2014
+
+SYSTEM
+Operating system architecture: amd64
+Operating system name:         Linux
+JRE vendor name:               Oracle Corporation
+JRE version number:            1.8.0_05
+
+MALTPARSER
+Version:                       1.7.2
+Build date:                    September 25 2012
+
+SETTINGS
+2planar
+  reduceonswitch (-2pr)                 false
+config
+  logfile (-lfi)                        stdout
+  workingdir (  -w)                     user.dir
+  name (  -c)                           pproj_24934
+  logging ( -cl)                        info
+  flowchart (  -m)                      proj
+  type (  -t)                           singlemalt
+  url (  -u)                            
+covington
+  allow_shift ( -cs)                    false
+  allow_root ( -cr)                     true
+graph
+  max_sentence_length (-gsl)            256
+  root_label (-grl)                     ROOT
+  head_rules (-ghr)                     
+guide
+  features (  -F)                       
+  data_split_threshold (  -T)           50
+  kbest_type ( -kt)                     rank
+  data_split_structure (  -s)           
+  data_split_column (  -d)              
+  learner (  -l)                        liblinear
+  decision_settings (-gds)              T.TRANS+A.DEPREL
+  classitem_separator (-gcs)            ~
+  kbest (  -k)                          -1
+input
+  charset ( -ic)                        UTF-8
+  reader ( -ir)                         tab
+  reader_options (-iro)                 
+  format ( -if)                         /appdata/dataformat/conllx.xml
+  infile (  -i)                         /dev/stdin
+  iterations ( -it)                     1
+lib
+  external ( -lx)                       
+  save_instance_files ( -li)            false
+  options ( -lo)                        
+  verbosity ( -lv)                      silent
+multiplanar
+  planar_root_handling (-prh)           normal
+nivre
+  allow_reduce ( -ne)                   false
+  allow_root ( -nr)                     true
+output
+  charset ( -oc)                        UTF-8
+  outfile (  -o)                        /dev/stdout
+  format ( -of)                         
+  writer_options (-owo)                 
+  writer ( -ow)                         tab
+planar
+  no_covered_roots (-pcov)               false
+  acyclicity (-pacy)                     true
+  connectedness (-pcon)                  none
+pproj
+  marking_strategy ( -pp)               head
+  lifting_order (-plo)                  shortest
+  covered_root (-pcr)                   none
+singlemalt
+  mode ( -sm)                           parse
+  diagnostics ( -di)                    false
+  use_partial_tree ( -up)               false
+  propagation ( -fp)                    
+  parsing_algorithm (  -a)              nivreeager
+  guide_model ( -gm)                    single
+  null_value ( -nv)                     one
+  diafile (-dif)                        stdout

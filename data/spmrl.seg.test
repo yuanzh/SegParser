@@ -1,0 +1,216 @@
+1/0	mrsylyA	mrsylyA	PN	PN	det=n|per=na|gen=m|num=s	0/0	---	_	_
+2/0	(	(	PNX	PNX	det=n|per=na|gen=na|num=na	3/0	MOD	_	_
+3/0	frnsA	frnsA	PN	PN	det=n|per=na|gen=m|num=s	1/0	MOD	_	_
+4/0	)	)	PNX	PNX	det=n|per=na|gen=na|num=na	3/0	MOD	_	_
+5/0	1511	1511	N	N	det=n|per=na|gen=m|num=s	1/0	MOD	_	_
+6/0	(	(	PNX	PNX	det=n|per=na|gen=na|num=na	7/0	MOD	_	_
+7/0	Af	Af	ABBREV	ABBREV	det=n|per=na|gen=na|num=na	1/0	MOD	_	_
+8/0	b	b	ABBREV	ABBREV	det=n|per=na|gen=na|num=na	7/0	---	_	_
+9/0	)	)	PNX	PNX	det=n|per=na|gen=na|num=na	7/0	MOD	_	_
+10/0	-	-	PNX	PNX	det=n|per=na|gen=na|num=na	1/0	MOD	_	_
+11/0	*kr	*kr	V	V	det=n|per=3|gen=m|num=s	0/0	---	_	_
+12/0	mSdr	mSdr	N	N	det=n|per=na|gen=m|num=s	11/0	SBJ	_	_
+13/0	dblwmAsy	dblwmAsy	AJ	AJ	det=n|per=na|gen=m|num=s	12/0	MOD	_	_
+14/0	frnsy	frnsy	AJ	AJ	det=n|per=na|gen=m|num=s	12/0	MOD	_	_
+15/0	>n	An	C	C	det=n|per=na|gen=na|num=na	11/0	OBJ	_	_
+15/1	h	h	PRO	PRO	det=n|per=na|gen=na|num=na	15/0	SBJ	_	_
+16/0	yntZr	AntZr	V	V	det=n|per=3|gen=m|num=s	15/0	PRD	_	_
+17/0	wSwl	wSwl	N	N	det=n|per=na|gen=m|num=s	16/0	SBJ	_	_
+18/0	wzyr	wzyr	N	N	det=n|per=na|gen=m|num=s	17/0	IDF	_	_
+19/0	AlxArjyp	xArjy	AJ	AJ	det=y|per=na|gen=f|num=s	18/0	IDF	_	_
+20/0	Allyby	lyby	AJ	AJ	det=y|per=na|gen=m|num=s	17/0	MOD	_	_
+21/0	bEd	bEd	N	N	det=n|per=na|gen=m|num=s	16/0	MOD	_	_
+22/0	Zhr	Zhr	N	N	det=n|per=na|gen=m|num=s	21/0	IDF	_	_
+23/0	Alywm	ywm	N	N	det=y|per=na|gen=m|num=s	22/0	IDF	_	_
+24/0	Al>rbEA'	ArbEA'	N	N	det=y|per=na|gen=m|num=s	22/0	MOD	_	_
+25/0	<lY	Aly	P	P	det=n|per=na|gen=na|num=na	16/0	MOD	_	_
+26/0	mrsylyA	mrsylyA	PN	PN	det=n|per=na|gen=m|num=s	25/0	OBJ	_	_
+27/0	l	l	P	P	det=n|per=na|gen=na|num=na	16/0	MOD	_	_
+27/1	Alm$Arkp	m$Arkp	N	N	det=y|per=na|gen=f|num=s	27/0	OBJ	_	_
+28/0	fy	fy	P	P	det=n|per=na|gen=na|num=na	27/1	MOD	_	_
+29/0	Alm&tmr	m&tmr	N	N	det=y|per=na|gen=m|num=s	28/0	OBJ	_	_
+30/0	Al>wrwby	Awrby	AJ	AJ	det=y|per=na|gen=m|num=s	29/0	MOD	_	_
+31/0	-	-	PNX	PNX	det=n|per=na|gen=na|num=na	29/0	MOD	_	_
+32/0	AlmtwsTy	mtwsTy	AJ	AJ	det=y|per=na|gen=m|num=s	29/0	MOD	_	_
+33/0	(	(	PNX	PNX	det=n|per=na|gen=na|num=na	34/0	MOD	_	_
+34/0	ywrwmyd	ywrwmyd	PN	PN	det=n|per=na|gen=m|num=s	29/0	MOD	_	_
+35/0	)	)	PNX	PNX	det=n|per=na|gen=na|num=na	34/0	MOD	_	_
+36/0	.	.	PNX	PNX	det=n|per=na|gen=na|num=na	11/0	MOD	_	_
+
+mrsylyA	mrsylyA@#mrsylyA@#PN_1.00000||-1||0||na/m/s||1.00000
+(	(@#(@#PNX_1.00000||-1||0||na/na/na||1.00000
+frnsA	frnsA@#frnsA@#PN_1.00000||-1||0||na/m/s||1.00000
+)	)@#)@#PNX_1.00000||-1||0||na/na/na||1.00000
+1511	1511@#1511@#N_1.00000||-1||0||na/m/s||1.00000
+(	(@#(@#PNX_1.00000||-1||0||na/na/na||1.00000
+Af	Af@#Af@#ABBREV_0.96374@#V_0.03182@#N_0.00444||-1||0||na/na/na||1.00000
+b	b@#b@#ABBREV_0.74905@#P_0.25095||-1||0||na/na/na||1.00000
+)	)@#)@#PNX_1.00000||-1||0||na/na/na||1.00000
+-	-@#-@#PNX_1.00000||-1||0||na/na/na||1.00000
+*kr	*kr@#*kr@#V_0.75881@#N_0.14756@#AJ_0.09363||-1||0||3/m/s||1.00000
+mSdr	mSdr@#mSdr@#N_0.96320@#AJ_0.03680||-1||0||na/m/s||1.00000
+dblwmAsy	dblwmAsy@#dblwmAsy@#AJ_0.73433@#N_0.26567||-1||0||na/m/s||1.00000
+frnsy	frnsy@#frnsy@#AJ_0.73433@#N_0.26567||-1||0||na/m/s||1.00000
+>nh	>n@#>n@#C_0.96863@#V_0.02841@#N_0.00296&&h@#An@#PRO_1.00000||-1||1||na/na/na||0.99110	>nh@#Anhy@#V_0.77207@#N_0.22793||-1||0||1/m/s||0.00890
+yntZr	yntZr@#AntZr@#V_1.00000||-1||0||3/m/s||1.00000
+wSwl	wSwl@#wSwl@#N_1.00000||-1||0||na/m/s||0.96202	w@#w@#P_0.38199@#PRT_0.31924@#C_0.29876&&Swl@#Swl@#N_1.00000||-1||1||na/m/s||0.03798
+wzyr	wzyr@#wzyr@#N_0.96136@#PN_0.03864||-1||0||na/m/s||1.00000
+AlxArjyp	AlxArjyp@#xArjy@#AJ_0.98840@#N_0.01160||0||0||na/f/s||1.00000
+Allyby	Allyby@#lyby@#AJ_0.73154@#N_0.26846||0||0||na/m/s||1.00000
+bEd	bEd@#bEd@#N_0.99844@#V_0.00156||-1||0||na/m/s||0.99775	b@#b@#P_0.51317@#PRT_0.48683&&Ed@#Ed@#N_1.00000||-1||1||na/m/s||0.00225
+Zhr	Zhr@#Zhr@#N_0.84426@#V_0.14754@#PN_0.00820||-1||0||na/m/s||1.00000
+Alywm	Alywm@#ywm@#N_0.98223@#PN_0.01777||0||0||na/m/s||1.00000
+Al>rbEA'	Al>rbEA'@#ArbEA'@#N_1.00000||0||0||na/m/s||1.00000
+<lY	<lY@#Aly@#P_0.99686@#AJ_0.00257@#V_0.00056||-1||0||na/na/na||0.99956	<l@#PIPEl@#N_1.00000&&Y@#Y@#PRO_1.00000||-1||0||na/m/s||0.00044
+mrsylyA	mrsylyA@#mrsylyA@#PN_1.00000||-1||0||na/m/s||1.00000
+lAlm$Arkp	l@#l@#P_1.00000&&Alm$Arkp@#Alm$Ark@#N_1.00000||-1||1||na/f/s||1.00000
+fy	fy@#fy@#P_0.99754@#ABBREV_0.00235@#N_0.00011||-1||0||na/na/na||0.99940	f@#f@#PRT_0.63440@#C_0.36560&&y@#y@#ABBREV_1.00000||-1||1||na/na/na||0.00060
+Alm&tmr	Alm&tmr@#m&tmr@#N_1.00000||0||0||na/m/s||1.00000
+Al>wrwby	Al>wrwby@#Awrby@#AJ_0.88269@#N_0.11731||0||0||na/m/s||1.00000
+-	-@#-@#PNX_1.00000||-1||0||na/na/na||1.00000
+AlmtwsTy	AlmtwsTy@#mtwsTy@#AJ_1.00000||0||0||na/m/s||1.00000
+(	(@#(@#PNX_1.00000||-1||0||na/na/na||1.00000
+ywrwmyd	ywrwmyd@#ywrwmyd@#PN_1.00000||-1||0||na/m/s||1.00000
+)	)@#)@#PNX_1.00000||-1||0||na/na/na||1.00000
+.	.@#.@#PNX_1.00000||-1||0||na/na/na||1.00000
+
+1/0	dm$q	dm$q	PN	PN	det=n|per=na|gen=m|num=s	0/0	---	_	_
+2/0	1511	1511	N	N	det=n|per=na|gen=m|num=s	1/0	MOD	_	_
+3/0	(	(	PNX	PNX	det=n|per=na|gen=na|num=na	4/0	MOD	_	_
+4/0	Af	Af	ABBREV	ABBREV	det=n|per=na|gen=na|num=na	1/0	MOD	_	_
+5/0	b	b	ABBREV	ABBREV	det=n|per=na|gen=na|num=na	4/0	---	_	_
+6/0	)	)	PNX	PNX	det=n|per=na|gen=na|num=na	4/0	MOD	_	_
+7/0	-	-	PNX	PNX	det=n|per=na|gen=na|num=na	1/0	MOD	_	_
+8/0	Tlbt	Tlb	V	V	det=n|per=3|gen=f|num=s	0/0	---	_	_
+9/0	AlHkwmp	Hkwmp	N	N	det=y|per=na|gen=f|num=s	8/0	SBJ	_	_
+10/0	Alswryp	swry	AJ	AJ	det=y|per=na|gen=f|num=s	9/0	MOD	_	_
+11/0	Alywm	ywm	N	N	det=y|per=na|gen=m|num=s	8/0	MOD	_	_
+12/0	Al>rbEA'	ArbEA'	N	N	det=y|per=na|gen=m|num=s	11/0	MOD	_	_
+13/0	mn	mn	P	P	det=n|per=na|gen=na|num=na	8/0	MOD	_	_
+14/0	mwrytAnyA	mwrytAnyA	PN	PN	det=n|per=na|gen=m|num=s	13/0	OBJ	_	_
+15/0	qTE	qTEp	N	N	det=n|per=na|gen=m|num=s	8/0	OBJ	_	_
+16/0	ElAqAt	ElAqp	N	N	det=n|per=na|gen=f|num=p	15/0	IDF	_	_
+16/1	hA	hA	PRO	PRO	det=n|per=na|gen=na|num=na	16/0	IDF	_	_
+17/0	AldblwmAsyp	dblwmAsy	AJ	AJ	det=y|per=na|gen=f|num=s	16/0	MOD	_	_
+18/0	mE	mE	N	N	det=n|per=na|gen=m|num=s	16/0	MOD	_	_
+19/0	mwrytAnyA	mwrytAnyA	PN	PN	det=n|per=na|gen=m|num=s	18/0	IDF	_	_
+20/0	b	b	P	P	det=n|per=na|gen=na|num=na	16/0	MOD	_	_
+20/1	AltwAfq	twAfq	N	N	det=y|per=na|gen=m|num=s	20/0	OBJ	_	_
+21/0	mE	mE	N	N	det=n|per=na|gen=m|num=s	20/1	MOD	_	_
+22/0	AlqrArAt	qrAr	N	N	det=y|per=na|gen=f|num=p	21/0	IDF	_	_
+23/0	Alty	Al*y	REL	REL	det=n|per=na|gen=f|num=s	22/0	MOD	_	_
+24/0	tm	tm	V	V	det=n|per=3|gen=m|num=s	23/0	MOD	_	_
+25/0	tbny	tbny	N	N	det=n|per=na|gen=m|num=s	24/0	SBJ	_	_
+25/1	hA	hA	PRO	PRO	det=n|per=na|gen=na|num=na	24/0	OBJ	_	_
+26/0	fy	fy	P	P	det=n|per=na|gen=na|num=na	24/0	MOD	_	_
+27/0	qmty	qmp	N	N	det=n|per=na|gen=f|num=d	26/0	OBJ	_	_
+28/0	AlqAhrp	qAhrp	PN	PN	det=y|per=na|gen=f|num=s	27/0	IDF	_	_
+29/0	w	w	C	C	det=n|per=na|gen=na|num=na	28/0	MOD	_	_
+29/1	mnZmp	mnZmp	N	N	det=n|per=na|gen=f|num=s	29/0	OBJ	_	_
+30/0	Alm&tmr	m&tmr	N	N	det=y|per=na|gen=m|num=s	29/1	IDF	_	_
+31/0	Al<slAmy	AslAmy	AJ	AJ	det=y|per=na|gen=m|num=s	30/0	MOD	_	_
+32/0	AlErbytyn	Erby	AJ	AJ	det=y|per=na|gen=f|num=d	27/0	MOD	_	_
+33/0	.	.	PNX	PNX	det=n|per=na|gen=na|num=na	8/0	MOD	_	_
+
+dm$q	dm$q@#dm$q@#PN_1.00000||-1||0||na/m/s||1.00000
+1511	1511@#1511@#N_1.00000||-1||0||na/m/s||1.00000
+(	(@#(@#PNX_1.00000||-1||0||na/na/na||1.00000
+Af	Af@#Af@#ABBREV_0.96468@#V_0.03087@#N_0.00445||-1||0||na/na/na||1.00000
+b	b@#b@#ABBREV_0.74905@#P_0.25095||-1||0||na/na/na||1.00000
+)	)@#)@#PNX_1.00000||-1||0||na/na/na||1.00000
+-	-@#-@#PNX_1.00000||-1||0||na/na/na||1.00000
+Tlbt	Tlbt@#Tlb@#V_1.00000||-1||0||3/f/s||1.00000
+AlHkwmp	AlHkwmp@#Hkwmp@#N_1.00000||0||0||na/f/s||1.00000
+Alswryp	Alswryp@#swry@#AJ_0.77108@#N_0.18019@#PN_0.04873||0||0||na/f/s||1.00000
+Alywm	Alywm@#ywm@#N_0.98191@#PN_0.01809||0||0||na/m/s||1.00000
+Al>rbEA'	Al>rbEA'@#ArbEA'@#N_1.00000||0||0||na/m/s||1.00000
+mn	mn@#mn@#P_0.97522@#REL_0.01961@#PRT_0.00240@#PRO_0.00153@#N_0.00100@#V_0.00024||-1||0||na/na/na||1.00000
+mwrytAnyA	mwrytAnyA@#mwrytAnyA@#PN_0.66546@#N_0.20713@#AJ_0.12741||-1||0||na/m/s||1.00000
+qTE	qTE@#qTE@#N_0.93371@#V_0.06629||-1||0||na/m/s||1.00000
+ElAqAthA	ElAqAt@#ElAqp@#N_1.00000&&hA@#hA@#PRO_1.00000||-1||0||na/f/p||1.00000
+AldblwmAsyp	AldblwmAsyp@#dblwmAsy@#AJ_0.73549@#N_0.26451||0||0||na/f/s||1.00000
+mE	mE@#mE@#N_1.00000||-1||0||na/m/s||1.00000
+mwrytAnyA	mwrytAnyA@#mwrytAnyA@#PN_0.66546@#N_0.20713@#AJ_0.12741||-1||0||na/m/s||1.00000
+bAltwAfq	b@#b@#P_0.73581@#PRT_0.26419&&AltwAfq@#twAfq@#N_1.00000||1||1||na/m/s||1.00000
+mE	mE@#mE@#N_1.00000||-1||0||na/m/s||1.00000
+AlqrArAt	AlqrArAt@#qrAr@#N_1.00000||0||0||na/f/p||1.00000
+Alty	Alty@#Al*y@#REL_0.99532@#N_0.00468||-1||0||na/f/s||0.99298	Alt@#PIPElp@#N_1.00000&&y@#y@#PRO_1.00000||-1||0||na/f/s||0.00702
+tm	tm@#tm@#V_1.00000||-1||0||3/m/s||0.94045	t@#t@#P_1.00000&&m@#m@#ABBREV_1.00000||-1||1||na/na/na||0.05955
+tbnyhA	tbny@#tbny@#N_0.80263@#AJ_0.15859@#V_0.03878&&hA@#hA@#PRO_1.00000||-1||0||na/m/s||0.91647	t@#t@#P_1.00000&&bny@#bny@#N_1.00000&&hA@#hA@#PRO_1.00000||-1||1||na/m/s||0.08353
+fy	fy@#fy@#P_0.99754@#ABBREV_0.00235@#N_0.00011||-1||0||na/na/na||0.99940	f@#f@#PRT_0.63440@#C_0.36560&&y@#y@#ABBREV_1.00000||-1||1||na/na/na||0.00060
+qmty	qmty@#qmp@#N_1.00000||-1||0||na/f/d||0.84257	qmt@#qmp@#N_1.00000&&y@#y@#PRO_1.00000||-1||0||na/f/s||0.15743
+AlqAhrp	AlqAhrp@#qAhrp@#PN_1.00000||0||0||na/f/s||1.00000
+wmnZmp	w@#w@#C_0.90343@#PRT_0.08864@#P_0.00792&&mnZmp@#mnZmp@#N_0.93283@#AJ_0.06717||-1||1||na/f/s||0.99380	w@#w@#C_0.49453@#PRT_0.31623@#P_0.18923&&mnZm@#mnZm@#N_0.56470@#AJ_0.43530&&p@#p@#PRO_1.00000||-1||1||na/m/s||0.00620
+Alm&tmr	Alm&tmr@#m&tmr@#N_1.00000||0||0||na/m/s||1.00000
+Al<slAmy	Al<slAmy@#AslAmy@#AJ_0.86700@#N_0.13300||0||0||na/m/s||1.00000
+AlErbytyn	AlErbytyn@#Erby@#AJ_0.73440@#N_0.26560||0||0||na/f/d||1.00000
+.	.@#.@#PNX_1.00000||-1||0||na/na/na||1.00000
+
+1/0	w	w	C	C	det=n|per=na|gen=na|num=na	1/1	MOD	_	_
+1/1	>Eln	AEln	V	V	det=n|per=3|gen=m|num=s	0/0	---	_	_
+2/0	mSdr	mSdr	N	N	det=n|per=na|gen=m|num=s	1/1	SBJ	_	_
+3/0	ms&wl	ms&wl	AJ	AJ	det=n|per=na|gen=m|num=s	2/0	MOD	_	_
+4/0	fy	fy	P	P	det=n|per=na|gen=na|num=na	3/0	MOD	_	_
+5/0	AlqyAdp	qyAdp	N	N	det=y|per=na|gen=f|num=s	4/0	OBJ	_	_
+6/0	Alqwmyp	qwmy	AJ	AJ	det=y|per=na|gen=f|num=s	5/0	MOD	_	_
+7/0	l	l	P	P	det=n|per=na|gen=na|num=na	5/0	MOD	_	_
+7/1	Hzb	Hzb	N	N	det=n|per=na|gen=m|num=s	7/0	OBJ	_	_
+8/0	AlbEv	bEv	PN	PN	det=y|per=na|gen=m|num=s	7/1	MOD	_	_
+9/0	>n	An	C	C	det=n|per=na|gen=na|num=na	1/1	OBJ	_	_
+10/0	"	"	PNX	PNX	det=n|per=na|gen=na|num=na	15/0	MOD	_	_
+11/0	AlmTlwb	mTlwb	N	N	det=y|per=na|gen=m|num=s	15/0	SBJ	_	_
+12/0	mn	mn	P	P	det=n|per=na|gen=na|num=na	11/0	MOD	_	_
+13/0	AlHkwmp	Hkwmp	N	N	det=y|per=na|gen=f|num=s	12/0	OBJ	_	_
+14/0	AlmwrytAnyp	mwrytAny	AJ	AJ	det=y|per=na|gen=f|num=s	13/0	MOD	_	_
+15/0	qTE	qTEp	N	N	det=n|per=na|gen=m|num=s	9/0	OBJ	_	_
+16/0	kl	kl	N	N	det=n|per=na|gen=m|num=s	15/0	IDF	_	_
+17/0	ElAqAt	ElAqp	N	N	det=n|per=na|gen=f|num=p	16/0	IDF	_	_
+17/1	hA	hA	PRO	PRO	det=n|per=na|gen=na|num=na	17/0	IDF	_	_
+18/0	mE	mE	N	N	det=n|per=na|gen=m|num=s	16/0	MOD	_	_
+19/0	<srA}yl	AsrA}yl	PN	PN	det=n|per=na|gen=m|num=s	18/0	IDF	_	_
+20/0	w	w	C	C	det=n|per=na|gen=na|num=na	15/0	MOD	_	_
+20/1	<ElAn	AElAn	N	N	det=n|per=na|gen=m|num=s	21/0	SBJ	_	_
+21/0	tDmAnhA	tDmAnhA	N	N	det=n|per=na|gen=m|num=s	20/0	OBJ	_	_
+22/0	AlmTlq	mTlq	N	N	det=y|per=na|gen=m|num=s	21/0	MOD	_	_
+23/0	mE	mE	N	N	det=n|per=na|gen=m|num=s	21/0	MOD	_	_
+24/0	Al$Eb	$Eb	N	N	det=y|per=na|gen=m|num=s	23/0	IDF	_	_
+25/0	AlflsTyny	flsTyny	AJ	AJ	det=y|per=na|gen=m|num=s	24/0	MOD	_	_
+26/0	Al*y	Al*y	REL	REL	det=n|per=na|gen=m|num=s	24/0	MOD	_	_
+27/0	yqAwm	qAwm	V	V	det=n|per=3|gen=m|num=s	26/0	MOD	_	_
+28/0	AlAHtlAl	AHtlAl	N	N	det=y|per=na|gen=m|num=s	27/0	OBJ	_	_
+29/0	Al<srA}yly	AsrA}yly	AJ	AJ	det=y|per=na|gen=m|num=s	28/0	MOD	_	_
+30/0	"	"	PNX	PNX	det=n|per=na|gen=na|num=na	15/0	MOD	_	_
+31/0	.	.	PNX	PNX	det=n|per=na|gen=na|num=na	1/1	MOD	_	_
+
+w>Eln	w@#w@#C_0.88184@#PRT_0.10191@#P_0.01625&&>Eln@#AEln@#V_1.00000||-1||1||3/m/s||1.00000
+mSdr	mSdr@#mSdr@#N_0.96320@#AJ_0.03680||-1||0||na/m/s||1.00000
+ms&wl	ms&wl@#ms&wl@#N_0.54512@#AJ_0.45488||-1||0||na/m/s||1.00000
+fy	fy@#fy@#P_0.99754@#ABBREV_0.00235@#N_0.00011||-1||0||na/na/na||0.99940	f@#f@#PRT_0.63440@#C_0.36560&&y@#y@#ABBREV_1.00000||-1||1||na/na/na||0.00060
+AlqyAdp	AlqyAdp@#qyAdp@#N_1.00000||0||0||na/f/s||1.00000
+Alqwmyp	Alqwmyp@#qwmy@#AJ_0.94076@#N_0.05924||0||0||na/f/s||1.00000
+lHzb	l@#l@#P_0.95446@#PRT_0.04554&&Hzb@#Hzb@#N_0.72174@#PN_0.26021@#V_0.01805||-1||1||na/m/s||1.00000
+AlbEv	AlbEv@#bEv@#PN_0.73498@#N_0.26502||0||0||na/m/s||1.00000
+>n	>n@#An@#C_0.99736@#V_0.00155@#N_0.00082@#ABBREV_0.00027||-1||0||na/na/na||1.00000
+"	"@#"@#PNX_1.00000||-1||0||na/na/na||1.00000
+AlmTlwb	AlmTlwb@#mTlwb@#N_0.69030@#AJ_0.30970||0||0||na/m/s||1.00000
+mn	mn@#mn@#P_0.97522@#REL_0.01961@#PRT_0.00240@#PRO_0.00153@#N_0.00100@#V_0.00024||-1||0||na/na/na||1.00000
+AlHkwmp	AlHkwmp@#Hkwmp@#N_1.00000||0||0||na/f/s||1.00000
+AlmwrytAnyp	AlmwrytAnyp@#mwrytAny@#AJ_0.73549@#N_0.26451||0||0||na/f/s||1.00000
+qTE	qTE@#qTE@#N_0.93369@#V_0.06631||-1||0||na/m/s||1.00000
+kl	kl@#kl@#N_0.99255@#V_0.00745||-1||0||na/m/s||1.00000
+ElAqAthA	ElAqAt@#ElAqp@#N_1.00000&&hA@#hA@#PRO_1.00000||-1||0||na/f/p||1.00000
+mE	mE@#mE@#N_1.00000||-1||0||na/m/s||1.00000
+<srA}yl	<srA}yl@#AsrA}yl@#PN_1.00000||-1||0||na/m/s||1.00000
+w<ElAn	w@#w@#C_0.87227@#PRT_0.10518@#P_0.02255&&<ElAn@#AElAn@#N_1.00000||-1||1||na/m/s||1.00000
+tDmAnhA	tDmAn@#Dm@#V_1.00000&&hA@#hA@#PRO_1.00000||-1||0||2/m/d||0.70847	t@#t@#P_1.00000&&DmAn@#DmAn@#N_1.00000&&hA@#hA@#PRO_1.00000||-1||1||na/m/s||0.29153
+AlmTlq	AlmTlq@#mTlq@#AJ_0.94340@#N_0.05660||0||0||na/m/s||1.00000
+mE	mE@#mE@#N_1.00000||-1||0||na/m/s||1.00000
+Al$Eb	Al$Eb@#$Eb@#N_1.00000||0||0||na/m/s||1.00000
+AlflsTyny	AlflsTyny@#flsTyny@#AJ_0.94262@#N_0.05738||0||0||na/m/s||1.00000
+Al*y	Al*y@#Al*y@#REL_0.99004@#V_0.00947@#N_0.00049||-1||0||na/m/s||1.00000
+yqAwm	yqAwm@#qAwm@#V_1.00000||-1||0||3/m/s||1.00000
+AlAHtlAl	AlAHtlAl@#AHtlAl@#N_1.00000||0||0||na/m/s||1.00000
+Al<srA}yly	Al<srA}yly@#AsrA}yly@#AJ_0.95118@#N_0.04882||0||0||na/m/s||1.00000
+"	"@#"@#PNX_1.00000||-1||0||na/na/na||1.00000
+.	.@#.@#PNX_1.00000||-1||0||na/na/na||1.00000
+

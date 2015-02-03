@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if test "$1" = "-c" -o "$1" = "-L" ; then
+	ARG=$1
+	for file in `eval ls $@` ; do
+#		echo "=== $file"
+#		echo "cat $file | lines $ARG -p 1 100000000"
+		NB=`cat $file | lines $ARG -p 1 100000000`
+		echo -e  "\t$NB $file"
+	done
+	
+else
+	/usr/bin/wc -l $@ 
+fi

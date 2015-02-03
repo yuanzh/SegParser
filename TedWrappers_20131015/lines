@@ -1,0 +1,54 @@
+#!/usr/bin/perl
+# Copyright (c) 2001 by David Chiang. All rights reserved.
+# modif to cope with conll files by DjamSeddah (2013)
+# usage: lines 2 3 < test.mrg  or lines -c 2 3 < test.conll
+ 
+
+# added by djame
+if (($ARGV[0] eq "-c")||($ARGV[0] eq "-L")){
+	$/="\n\n";
+	shift @ARGV;
+}elsif($ARGV[0] eq '-mada'){
+       $/="--------------\nSENTENCE BREAK\n--------------\n";
+       shift @ARGV;
+}
+
+
+if ($ARGV[0] eq "-ptb"){
+	shift @ARGV;
+	#default mode for the sake of being compatible with one script
+}
+		
+
+if ($ARGV[0] eq "-p"){
+	$DISPLAYNUM=1;
+	shift @ARGV;
+}
+
+#if ($#ARGV <2 ) {
+#	printf "Usage: lines <start> <stop+1>\n";
+#	die;
+#}
+
+$start = $ARGV[0];
+#shift @ARGV;
+$stop = $ARGV[1];
+
+if (!defined($ARGV[1])){
+ $stop=$start+1;
+}
+
+
+$i = 1;
+
+while ($i < $start && <STDIN>) {
+	$i++;
+}
+
+while ($i >= $start && $i < $stop && defined($_ = <STDIN>)) {
+	print $_ if ($DISPLAYNUM != 1);
+	$i++;
+}
+
+print  $i if ($DISPLAYNUM == 1);
+
