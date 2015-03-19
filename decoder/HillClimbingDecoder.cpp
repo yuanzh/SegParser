@@ -23,7 +23,7 @@ void* hillClimbingThreadFunc(void* instance) {
 		}
 	assert(selfid != -1);
 
-	//data->debug("pending.", selfid);
+	data->debug("pending.", selfid);
 	bool jobsDone = false;
 
 	while (true) {
@@ -33,14 +33,20 @@ void* hillClimbingThreadFunc(void* instance) {
 			 pthread_cond_wait(&data->taskStartCond[selfid], &data->taskMutex[selfid]);
 		}
 
+		//if (!data->gold)
+		//	data->debug("start working.", selfid);
+
 		if (data->threadExit[selfid]) {
 			// jobs done
-            //data->debug("receive exit signal.", selfid);
+            data->debug("receive exit signal.", selfid);
 			data->taskDone[selfid] = true;
 			jobsDone = true;
 		}
 
 		pthread_mutex_unlock(&data->taskMutex[selfid]);
+
+		//if (!data->gold)
+		//	data->debug("release lock.", selfid);
 
 		if (jobsDone) {
 			break;
@@ -239,12 +245,13 @@ void* hillClimbingThreadFunc(void* instance) {
 		pthread_mutex_lock(&data->taskMutex[selfid]);
 
 		data->taskDone[selfid] = true;
+
 		pthread_cond_signal(&data->taskDoneCond[selfid]);
 
 		pthread_mutex_unlock(&data->taskMutex[selfid]);
 	}
 
-    //data->debug("exit.", selfid);
+    data->debug("exit.", selfid);
 
     pthread_exit(NULL);
 	return NULL;
@@ -266,12 +273,17 @@ void HillClimbingDecoder::initialize() {
 	taskDone.resize(thread);
 	threadExit.resize(thread);
 
-	updateMutex = PTHREAD_MUTEX_INITIALIZER;
+	//updateMutex = PTHREAD_MUTEX_INITIALIZER;
+	pthread_mutex_init(&updateMutex, NULL);
+	pthread_mutex_init(&debugMutex, NULL);
 	for (int i = 0; i < thread; ++i) {
 		threadID[i] = -1;
-		taskMutex[i] = PTHREAD_MUTEX_INITIALIZER;
-		taskStartCond[i] = PTHREAD_COND_INITIALIZER;
-		taskDoneCond[i] = PTHREAD_COND_INITIALIZER;
+		//taskMutex[i] = PTHREAD_MUTEX_INITIALIZER;
+		pthread_mutex_init(&taskMutex[i], NULL);
+		//taskStartCond[i] = PTHREAD_COND_INITIALIZER;
+		pthread_cond_init(&taskStartCond[i], NULL);
+		//taskDoneCond[i] = PTHREAD_COND_INITIALIZER;
+		pthread_cond_init(&taskDoneCond[i], NULL);
 		taskDone[i] = true;
 		threadExit[i] = false;
 
@@ -292,24 +304,39 @@ void HillClimbingDecoder::shutdown() {
 		assert(taskDone[i]);
 		threadExit[i] = true;
 		taskDone[i] = false;
+
 		pthread_cond_signal(&taskStartCond[i]);
 
 		pthread_mutex_unlock(&taskMutex[i]);
 	}
 
+	//cout << "finish send signal" << endl;
+
 	for (int i = 0; i < thread; ++i) {
 		// wait thread
 		pthread_join(threadID[i], NULL);
+		debug("finish waiting thread", i);
 	}
+
+	for (int i = 0; i < thread; ++i) {
+		pthread_mutex_destroy(&taskMutex[i]);
+		pthread_cond_destroy(&taskStartCond[i]);
+		pthread_cond_destroy(&taskDoneCond[i]);
+		debug("finish destroy thread", i);
+	}
+
+	pthread_mutex_destroy(&updateMutex);
+	pthread_mutex_destroy(&debugMutex);
+	//cout << "shutdown finish aaa" << endl;
 }
 
 void HillClimbingDecoder::debug(string msg, int id) {
-	pthread_mutex_lock(&updateMutex);
+	pthread_mutex_lock(&debugMutex);
 
-	cout << "Thread " << id << ": " << msg << endl;
+	//cout << "Thread " << id << ": " << msg << endl;
 	cout.flush();
 
-	pthread_mutex_unlock(&updateMutex);
+	pthread_mutex_unlock(&debugMutex);
 }
 
 void HillClimbingDecoder::startTask(DependencyInstance* pred, DependencyInstance* gold, FeatureExtractor* fe) {
@@ -330,6 +357,7 @@ void HillClimbingDecoder::startTask(DependencyInstance* pred, DependencyInstance
 
 		assert(taskDone[i]);
 		taskDone[i] = false;
+
 		pthread_cond_signal(&taskStartCond[i]);
 
 		pthread_mutex_unlock(&taskMutex[i]);

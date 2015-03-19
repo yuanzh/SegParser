@@ -95,18 +95,23 @@ void* decodeThreadFunc(void* instance) {
 		inst->currProcessID++;
 		pred = reader.nextInstance();
 
+		//cout << "finish reading " << inst->currProcessID << endl;
+
 		pthread_mutex_unlock(&inst->processMutex);
 
-		DependencyInstance gold;
-		assert(&gold != pred.get());
-
-		if (inst->currProcessID > inst->options->testSentences || !pred) {
+		if (currProcessID >= inst->options->testSentences || !pred) {
+			//cout << "check 1 " << inst->currProcessID << endl;
 			pthread_mutex_lock( &inst->finishMutex );
 			inst->finishThreadNum++;
 			pthread_mutex_unlock( &inst->finishMutex );
+			//cout << "check 2 " << inst->currProcessID << endl;
 
 			break;
 		}
+		//cout << "finish check " << inst->currProcessID << endl;
+
+		DependencyInstance gold;
+		assert(&gold != pred.get());
 
 		if (pred) {
 			pred->setInstIds(inst->sp->pipe, inst->options);
@@ -115,6 +120,7 @@ void* decodeThreadFunc(void* instance) {
 			fe = boost::shared_ptr<FeatureExtractor>(new FeatureExtractor(pred.get(), inst->sp, params, inst->options->devThread));
 			decoder->initInst(pred.get(), fe.get());	// remove gold info and init trees
 		}
+		//cout << "finish init " << inst->currProcessID << endl;
 
 		if (inst->verbal) {
 			cout << currProcessID << " ";
@@ -132,6 +138,7 @@ void* decodeThreadFunc(void* instance) {
 		pthread_mutex_unlock( &inst->finishMutex );
 	}
 
+	//cout << "check 3 " << inst->currProcessID << endl;
 	decoder->shutdown();
 	delete decoder;
 

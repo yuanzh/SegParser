@@ -136,6 +136,9 @@ void Options::processArguments(int argc, char** argv) {
 		if (pair[0].compare("savebest") == 0) {
 			saveBestModel = (pair[1] == "true" ? true : false);
 		}
+		if (pair[0].compare("ho") == 0) {
+			useHO = (pair[1] == "true" ? true : false);
+		}
 
 		//TODO: add useHO option
 	}

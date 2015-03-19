@@ -42,6 +42,7 @@ public:
 	VariableInfo best;
 	int unChangeIter;		// converge criteria
 	pthread_mutex_t updateMutex;
+	pthread_mutex_t debugMutex;
 
 	DependencyInstance* pred;
 	DependencyInstance* gold;
