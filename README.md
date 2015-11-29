@@ -34,6 +34,8 @@ POS candidate := POS tag_probability
 
 Because of the license issue, datasets are not directly released here. You can find sample files in "data" directory. Please contact me for the full dataset if you are interested in.
 
+UPDATE: data generator for SPMRL dataset and needed files for generating testing data are added into the directory spmrl_data_generator.
+
 ##### 4. Usage
 
 Take a look at the scripts "run_DATA.sh" and "run_DATA_test.sh" where DATA=spmrl|classical|chinese. For example, to train a model on the SPMRL dataset, you can simply run
